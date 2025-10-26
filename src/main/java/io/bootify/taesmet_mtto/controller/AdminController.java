@@ -7,11 +7,11 @@ import io.bootify.taesmet_mtto.domain.TipoMaquina;
 import io.bootify.taesmet_mtto.domain.Usuario;
 import io.bootify.taesmet_mtto.repos.MaquinaRepository;
 import io.bootify.taesmet_mtto.repos.UsuarioRepository;
+import io.bootify.taesmet_mtto.util.TipoMaquinaLabel;
+import io.bootify.taesmet_mtto.dto.UsuarioForm;
+
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import io.bootify.taesmet_mtto.util.TipoMaquinaLabel;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -35,8 +34,8 @@ public class AdminController {
     private final PasswordEncoder encoder;
 
     public AdminController(UsuarioRepository usuarioRepo,
-                        MaquinaRepository maquinaRepo,
-                        PasswordEncoder encoder) {
+                           MaquinaRepository maquinaRepo,
+                           PasswordEncoder encoder) {
         this.usuarioRepo = usuarioRepo;
         this.maquinaRepo = maquinaRepo;
         this.encoder = encoder;
@@ -52,45 +51,43 @@ public class AdminController {
     @GetMapping("/usuarios")
     public String usuarios(Model m) {
         m.addAttribute("usuarios", usuarioRepo.findAll());
-        m.addAttribute("usuarioForm", new Usuario());
+        m.addAttribute("usuarioForm", new UsuarioForm());   // <-- usa DTO
         m.addAttribute("roles", Rol.values());
         return "admin/usuarios";
     }
 
     @PostMapping("/usuarios")
-    public String crearUsuario(@Valid @ModelAttribute("usuarioForm") Usuario u,
-                            BindingResult br,
-                            Model m) {
+    public String crearUsuario(@Valid @ModelAttribute("usuarioForm") UsuarioForm form,
+                               BindingResult br,
+                               Model m) {
+
+        // email único
+        if (!br.hasErrors() && usuarioRepo.findByEmailIgnoreCase(form.getEmail()).isPresent()) {
+            br.rejectValue("email", "email.duplicado", "Ese email ya está registrado");
+        }
+
         if (br.hasErrors()) {
             m.addAttribute("usuarios", usuarioRepo.findAll());
             m.addAttribute("roles", Rol.values());
             return "admin/usuarios";
         }
 
-        if (usuarioRepo.findByEmailIgnoreCase(u.getEmail()).isPresent()) {
-            br.rejectValue("email", "email.duplicado", "Ese email ya está registrado");
-            m.addAttribute("usuarios", usuarioRepo.findAll());
-            m.addAttribute("roles", Rol.values());
-            return "admin/usuarios";
-        }
-
-        if (u.getPlainPassword() == null || u.getPlainPassword().isBlank()) {
-            br.rejectValue("plainPassword", "password.requerida", "La contraseña es obligatoria");
-            m.addAttribute("usuarios", usuarioRepo.findAll());
-            m.addAttribute("roles", Rol.values());
-            return "admin/usuarios";
-        }
-
-        u.setPassword(encoder.encode(u.getPlainPassword()));
+        // mapear DTO -> Entidad
+        Usuario u = new Usuario();
+        u.setNombre(form.getNombre());
+        u.setEmail(form.getEmail());
+        u.setRol(form.getRol());
         u.setActivo(true);
+        u.setPassword(encoder.encode(form.getPlainPassword())); // encriptar
+
         usuarioRepo.save(u);
-        return "redirect:/admin/usuarios";
+        return "redirect:/admin/usuarios?ok";
     }
 
     @PostMapping("/usuarios/{id}/eliminar")
     public String eliminarUsuario(@PathVariable("id") Long id) {
         usuarioRepo.deleteById(id);
-        return "redirect:/admin/usuarios";
+        return "redirect:/admin/usuarios?ok";
     }
 
     /* ============== MÁQUINAS: LISTA + FILTROS + PAGINACIÓN ============== */
@@ -127,22 +124,19 @@ public class AdminController {
     /* ===== CREAR (solo selects, genera código/nombre automático) ===== */
     @PostMapping("/maquinas")
     public String crearMaquina(@RequestParam("tipo") TipoMaquina tipo,
-                            @RequestParam("condicion") CondicionMaquina condicion,
-                            @RequestParam(value = "page", defaultValue = "0") int page,
-                            @RequestParam(value = "size", defaultValue = "10") int size,
-                            @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
-                            @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
+                                @RequestParam("condicion") CondicionMaquina condicion,
+                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                @RequestParam(value = "size", defaultValue = "10") int size,
+                                @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
+                                @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
 
-        // correlativo por tipo + condición
         long correl = maquinaRepo.countByTipoAndCondicion(tipo, condicion) + 1L;
         String sufijo = String.format("%03d", correl);
         String flag = (condicion == CondicionMaquina.NUEVA) ? "N" : "U";
         String codigo = tipo.name() + "-" + flag + "-" + sufijo;
 
-        // nombre "bonito" con helper de etiquetas
         String nombre = TipoMaquinaLabel.descripcion(tipo) + " " + sufijo;
 
-        // evita choque por concurrencia (intento de 5 saltos)
         int tries = 0;
         while (maquinaRepo.existsByCodigo(codigo) && tries < 5) {
             correl++;
@@ -158,7 +152,6 @@ public class AdminController {
         mq.setNombre(nombre);
         maquinaRepo.save(mq);
 
-        // Mantén filtros/paginación al volver
         String back = String.format("redirect:/admin/maquinas?page=%d&size=%d%s%s",
                 page, size,
                 (tipoFilter != null ? "&tipo=" + tipoFilter : ""),
@@ -166,13 +159,13 @@ public class AdminController {
         return back;
     }
 
-    /* ===== DUPLICAR (precarga selects desde la fila) ===== */
+    /* ===== DUPLICAR ===== */
     @PostMapping("/maquinas/{id}/duplicar")
     public String duplicar(@PathVariable Long id,
-                        @RequestParam(value = "page", defaultValue = "0") int page,
-                        @RequestParam(value = "size", defaultValue = "10") int size,
-                        @RequestParam(value = "tipo", required = false) TipoMaquina currentTipo,
-                        @RequestParam(value = "cond", required = false) CondicionMaquina currentCond) {
+                            @RequestParam(value = "page", defaultValue = "0") int page,
+                            @RequestParam(value = "size", defaultValue = "10") int size,
+                            @RequestParam(value = "tipo", required = false) TipoMaquina currentTipo,
+                            @RequestParam(value = "cond", required = false) CondicionMaquina currentCond) {
         Maquina found = maquinaRepo.findById(id).orElseThrow();
         return "redirect:/admin/maquinas?page=" + page + "&size=" + size +
                 "&prefTipo=" + found.getTipo() + "&prefCond=" + found.getCondicion() +
@@ -180,20 +173,20 @@ public class AdminController {
                 (currentCond != null ? "&cond=" + currentCond : "");
     }
 
-    /* ===== ELIMINAR (mantiene filtros/paginación) ===== */
+    /* ===== ELIMINAR ===== */
     @PostMapping("/maquinas/{id}/eliminar")
     public String eliminarMaquina(@PathVariable("id") Long id,
-                                @RequestParam(value = "page", defaultValue = "0") int page,
-                                @RequestParam(value = "size", defaultValue = "10") int size,
-                                @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
-                                @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
+                                  @RequestParam(value = "page", defaultValue = "0") int page,
+                                  @RequestParam(value = "size", defaultValue = "10") int size,
+                                  @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
+                                  @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
         maquinaRepo.deleteById(id);
         return "redirect:/admin/maquinas?page=" + page + "&size=" + size +
                 (tipo != null ? "&tipo=" + tipo : "") +
                 (cond != null ? "&cond=" + cond : "");
     }
 
-    /* ===== EXPORT CSV (aplica filtros actuales) ===== */
+    /* ===== EXPORT CSV ===== */
     @GetMapping(value = "/maquinas/export.csv", produces = "text/csv")
     @ResponseBody
     public org.springframework.http.ResponseEntity<byte[]> exportCsv(

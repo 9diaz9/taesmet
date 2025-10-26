@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mantenimientos | Panel Líder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/lider.css">
+</head>
+<body class="bg-dark text-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/lider"><i class="bi bi-speedometer2 me-2"></i>Panel de Líder</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="nav" class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+       <li class="nav-item">
+  <form th:action="@{/logout}" method="post" class="d-inline">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button type="submit"
+            class="btn btn-outline-light ms-lg-3 d-lg-inline w-100 w-lg-auto">
+      <i class="bi bi-box-arrow-right me-1"></i> Salir
+    </button>
+  </form>
+</li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main class="container my-5">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h3 class="fw-bold text-warning m-0">Mantenimientos</h3>
+    <a href="/lider" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Panel</a>
+  </div>
+
+  <!-- Alerts -->
+  <div th:if="${param.ok}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> Mantenimiento asignado correctamente.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <div th:if="${param.error == 'duplicado'}" class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> Ya hay un mantenimiento pendiente/en proceso del mismo tipo para esa máquina.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+  <!-- Asignar -->
+  <div class="card bg-secondary-subtle text-dark p-3 mb-4">
+  <h5 class="fw-bold mb-3"><i class="bi bi-person-gear"></i> Asignar mantenimiento</h5>
+  <form class="row g-3" method="post" action="/lider/mantenimientos/asignar">
+    <!-- 🔒 Token CSRF obligatorio -->
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+    <div class="col-md-3">
+      <label class="form-label">Máquina</label>
+      <select class="form-select" name="maquinaId" required>
+        <option value="" selected disabled>Seleccione…</option>
+        <option th:each="mq : ${maquinas}" th:value="${mq.id}" th:text="${mq.codigo + ' - ' + mq.nombre}"
+                th:selected="${selMaquinaId != null and selMaquinaId == mq.id}"></option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Técnico</label>
+      <select class="form-select" name="tecnicoId" required>
+        <option value="" selected disabled>Seleccione…</option>
+        <option th:each="t : ${tecnicos}" th:value="${t.id}" th:text="${t.nombre + ' (' + t.email + ')'}"></option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Tipo</label>
+      <select class="form-select" name="tipo" required>
+        <option value="" selected disabled>Seleccione…</option>
+        <option th:each="tm : ${tipos}" th:value="${tm}" th:text="${tm}"></option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Programado para</label>
+      <input type="date" class="form-control" name="programadoPara">
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Descripción (opcional)</label>
+      <textarea class="form-control" name="descripcion" rows="2" placeholder="Detalle del mantenimiento…"></textarea>
+    </div>
+
+    <div class="col-12 d-flex justify-content-end">
+      <button class="btn btn-success"><i class="bi bi-save"></i> Asignar</button>
+    </div>
+  </form>
+</div>
+
+  <!-- Tabla -->
+  <div class="card bg-secondary-subtle text-dark p-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle m-0">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Máquina</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Asignado a</th>
+          <th>Programado</th>
+          <th>Descripción</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${mantenimientos}">
+          <td th:text="${m.id}">1</td>
+          <td th:text="${m.maquina != null ? m.maquina.codigo + ' - ' + m.maquina.nombre : '—'}">—</td>
+          <td th:text="${m.tipo}">PREVENTIVO</td>
+          <td>
+            <span class="badge"
+                  th:text="${m.estado}"
+                  th:classappend="${m.estado.name()=='PENDIENTE'} ? ' bg-primary' :
+                                  (${m.estado.name()=='EN_PROCESO'} ? ' bg-warning text-dark' :
+                                  (${m.estado.name()=='REALIZADO'} ? ' bg-success' : ' bg-danger'))">PENDIENTE</span>
+          </td>
+          <td th:text="${m.asignadoA != null ? m.asignadoA.nombre : '—'}">—</td>
+          <td th:text="${m.programadoPara}">2025-01-01</td>
+          <td th:text="${m.descripcion}">—</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(mantenimientos)}">
+          <td colspan="7" class="text-center text-secondary py-4">No hay mantenimientos</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="p-3 d-flex justify-content-between align-items-center">
+      <span class="small text-secondary">Página <b th:text="${page.number + 1}">1</b> de <b th:text="${page.totalPages}">1</b></span>
+      <div class="btn-group">
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${page.first} ? ' disabled'"
+           th:href="@{/lider/mantenimientos(page=${page.number-1}, size=${page.size}, maquinaId=${selMaquinaId})}">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${page.last} ? ' disabled'"
+           th:href="@{/lider/mantenimientos(page=${page.number+1}, size=${page.size}, maquinaId=${selMaquinaId})}">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

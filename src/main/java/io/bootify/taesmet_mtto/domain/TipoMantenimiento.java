@@ -1,4 +1,4 @@
 package io.bootify.taesmet_mtto.domain;
-public enum TipoMtto {
+public enum TipoMantenimiento {
     CRITICO, PREVENTIVO_ELECTRICO, PREVENTIVO_MECANICO
 }

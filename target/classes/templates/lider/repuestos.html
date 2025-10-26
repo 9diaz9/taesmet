@@ -1,34 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repuestos | Panel Líder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/lider.css">
+</head>
+<body class="bg-dark text-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/lider"><i class="bi bi-speedometer2 me-2"></i>Panel de Líder</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="nav" class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+  <form th:action="@{/logout}" method="post" class="d-inline">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button type="submit"
+            class="btn btn-outline-light ms-lg-3 d-lg-inline w-100 w-lg-auto">
+      <i class="bi bi-box-arrow-right me-1"></i> Salir
+    </button>
+  </form>
+</li>
 
-<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Aprobación Repuestos</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"></head>
-<body class="container py-4">
-<h2>Pendientes</h2>
-<table class="table">
-  <thead><tr><th>ID</th><th>Mantenimiento</th><th>Motivo</th><th></th></tr></thead>
-  <tbody>
-    <tr th:each="s : ${pendientes}">
-      <td th:text="${s.id}"></td>
-      <td th:text="${s.codigoMaquina}"></td>
-      <td th:text="${s.motivo}"></td>
-      <td>
-        <form th:action="@{'/lider/repuestos/' + ${s.id} + '/aprobar'}" method="post" class="d-flex gap-2">
-          <input class="form-control" name="observacion" placeholder="Observación">
-          <button class="btn btn-success btn-sm">Aprobar</button>
-        </form>
-      </td>
-    </tr>
-  </tbody>
-</table>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-<h2 class="mt-4">Aprobados</h2>
-<table class="table">
-  <thead><tr><th>ID</th><th>Mantenimiento</th><th>Observación</th></tr></thead>
-  <tbody>
-    <tr th:each="s : ${aprobados}">
-      <td th:text="${s.id}"></td>
-      <td th:text="${s.codigoMaquina}"></td>
-      <td th:text="${s.observacionLider}"></td>
-    </tr>
-  </tbody>
-</table>
-</body></html>
+<main class="container my-5">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h3 class="fw-bold text-warning m-0">Solicitudes de Repuestos</h3>
+    <a href="/lider" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Panel</a>
+  </div>
+
+  <div class="card bg-secondary-subtle text-dark p-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle m-0">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Máquina</th>
+          <th>Técnico</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${solicitudes}">
+          <td th:text="${s.id}">1</td>
+          <td th:text="${s.creadoEn != null ? s.creadoEn : '—'}">—</td>
+          <td th:text="${s.maquina != null ? s.maquina.codigo + ' - ' + s.maquina.nombre : '—'}">—</td>
+          <td th:text="${s.solicitadoPor != null ? s.solicitadoPor.nombre : '—'}">—</td>
+          <td th:text="${s.descripcion != null ? s.descripcion : '—'}">—</td>
+          <td>
+            <span class="badge"
+                  th:text="${s.estado != null ? s.estado : '—'}"
+                  th:classappend="${s.estado != null && s.estado.name()=='APROBADO'} ? ' bg-success' :
+                                  (${s.estado != null && s.estado.name()=='RECHAZADO'} ? ' bg-danger' :
+                                  ' bg-warning text-dark')">—</span>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(solicitudes)}">
+          <td colspan="6" class="text-center text-secondary py-4">No hay solicitudes</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

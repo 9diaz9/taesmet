@@ -1,0 +1,33 @@
+body {
+  background-color: #0b132b;
+  color: #e0e0e0;
+}
+
+.navbar {
+  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+}
+
+.option-card {
+  background-color: #1c2541;
+  border: 1px solid #3a506b;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.5);
+}
+
+.stat-box {
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.stat-box:hover {
+  transform: scale(1.05);
+}
+
+footer {
+  background-color: #1c2541;
+  border-top: 1px solid #3a506b;
+}

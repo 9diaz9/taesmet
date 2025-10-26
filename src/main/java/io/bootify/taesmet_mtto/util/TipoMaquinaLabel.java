@@ -6,6 +6,7 @@ public final class TipoMaquinaLabel {
     private TipoMaquinaLabel() {}
 
     public static String descripcion(TipoMaquina t) {
+        if (t == null) return "";
         switch (t) {
             case PGH:
                 return "Puente Grúa Hyundai";
