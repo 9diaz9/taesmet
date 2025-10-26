@@ -1,0 +1,34 @@
+
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Aprobación Repuestos</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body class="container py-4">
+<h2>Pendientes</h2>
+<table class="table">
+  <thead><tr><th>ID</th><th>Mantenimiento</th><th>Motivo</th><th></th></tr></thead>
+  <tbody>
+    <tr th:each="s : ${pendientes}">
+      <td th:text="${s.id}"></td>
+      <td th:text="${s.codigoMaquina}"></td>
+      <td th:text="${s.motivo}"></td>
+      <td>
+        <form th:action="@{'/lider/repuestos/' + ${s.id} + '/aprobar'}" method="post" class="d-flex gap-2">
+          <input class="form-control" name="observacion" placeholder="Observación">
+          <button class="btn btn-success btn-sm">Aprobar</button>
+        </form>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="mt-4">Aprobados</h2>
+<table class="table">
+  <thead><tr><th>ID</th><th>Mantenimiento</th><th>Observación</th></tr></thead>
+  <tbody>
+    <tr th:each="s : ${aprobados}">
+      <td th:text="${s.id}"></td>
+      <td th:text="${s.codigoMaquina}"></td>
+      <td th:text="${s.observacionLider}"></td>
+    </tr>
+  </tbody>
+</table>
+</body></html>

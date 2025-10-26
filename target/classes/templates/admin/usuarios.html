@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Usuarios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f6f8fb; }
+    .card { border: none; box-shadow: 0 10px 25px rgba(0,0,0,.05); border-radius: 1rem; }
+    .form-control, .form-select { border-radius: .75rem; }
+    .btn-primary { border-radius: .75rem; }
+    .table thead th { background:#f0f4ff; }
+    .badge-role { font-weight: 600; }
+  </style>
+</head>
+<body class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Administración de Usuarios</h2>
+      <div class="text-muted">Crea y gestiona las cuentas de tu equipo</div>
+    </div>
+     <a th:href="@{/admin}" class="btn btn-outline-secondary">Volver al menú</a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Formulario -->
+    <div class="col-lg-5">
+      <div class="card p-4">
+        <h5 class="mb-3">Nuevo usuario</h5>
+
+        <form th:action="@{/admin/usuarios}" th:object="${usuarioForm}"
+              method="post" class="row g-3 needs-validation" novalidate>
+          <!-- CSRF -->
+          <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+          <!-- Errores globales -->
+          <div class="col-12" th:if="${#fields.hasErrors()}">
+            <div class="alert alert-danger mb-0">
+              <strong>Revisa los datos:</strong>
+              <ul class="mb-0 mt-2">
+                <li th:each="err : ${#fields.errors()}" th:text="${err}"></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="col-12">
+            <label class="form-label">Nombre</label>
+            <input th:field="*{nombre}" class="form-control" placeholder="Nombre" required
+                   maxlength="60"
+                   pattern="^(?=.{2,60}$)(?!.*\d)(?!.*\b(?:jaja|jeje|jiji|jojo|haha|hehe|hihi|xd|ajaj|lol)\b)(?!.*(.)\1{3,})[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$"
+                   title="Solo letras y espacios; sin números, risas (jaja/jeje/etc.) ni repeticiones extrañas; 2–60 caracteres">
+            <div class="text-danger small" th:errors="*{nombre}"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="col-12">
+            <label class="form-label">Email (solo @taesmet.com)</label>
+            <input th:field="*{email}" class="form-control" placeholder="nombre@taesmet.com" required
+                   pattern="(?=.{5,64}$)[A-Za-z]{2,}(?:[._-][A-Za-z]+)*@taesmet\.com"
+                   title="Debe ser del dominio taesmet.com y con al menos 2 letras antes de @">
+            <div class="text-danger small" th:errors="*{email}"></div>
+          </div>
+
+          <!-- Contraseña (plainPassword) -->
+          <div class="col-12">
+            <label class="form-label">Contraseña</label>
+            <input type="password" th:field="*{plainPassword}" class="form-control" placeholder="••••••••" required
+                   minlength="8" maxlength="15"
+                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,15}"
+                   title="8–15 caracteres, con minúscula, mayúscula, dígito y carácter especial">
+            <div class="text-danger small" th:errors="*{plainPassword}"></div>
+            <div class="form-text">
+              Ejemplos válidos: <code>Peru2024#</code>, <code>Nicolas#12</code>, <code>52242002bB#</code>
+            </div>
+          </div>
+
+          <!-- Rol -->
+          <div class="col-12">
+            <label class="form-label">Rol</label>
+            <select th:field="*{rol}" class="form-select" required>
+              <option value="" disabled selected>Selecciona un rol...</option>
+              <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+            </select>
+            <div class="text-danger small" th:errors="*{rol}"></div>
+          </div>
+
+          <div class="col-12 d-grid">
+            <button class="btn btn-primary btn-lg" type="submit">Crear usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="col-lg-7">
+      <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Usuarios registrados</h5>
+          <span class="text-muted" th:text="${#lists.size(usuarios)} + ' usuarios'">0 usuarios</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="u : ${usuarios}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.nombre}"></td>
+                <td th:text="${u.email}"></td>
+                <td>
+                  <span class="badge text-bg-primary badge-role" th:text="${u.rol}"></span>
+                </td>
+                <td class="text-end">
+                  <form th:action="@{/admin/usuarios/{id}/eliminar(id=${u.id})}" method="post" class="d-inline">
+  <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+  <button class="btn btn-sm btn-danger" type="submit"
+          onclick="return confirm('¿Eliminar este usuario?')">Eliminar</button>
+</form>
+
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(usuarios)}">
+                <td colspan="5" class="text-center text-muted py-4">Aún no hay usuarios</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Validación Bootstrap (cliente)
+    (function () {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault(); event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
+</body>
+</html>

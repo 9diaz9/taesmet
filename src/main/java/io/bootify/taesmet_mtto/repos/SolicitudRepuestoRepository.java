@@ -1,0 +1,1 @@
+package io.bootify.taesmet_mtto.repos; import org.springframework.data.jpa.repository.*; import io.bootify.taesmet_mtto.domain.SolicitudRepuesto; import java.util.*; public interface SolicitudRepuestoRepository extends JpaRepository<SolicitudRepuesto,Long>{ List<SolicitudRepuesto> findByAprobado(boolean aprobado); }

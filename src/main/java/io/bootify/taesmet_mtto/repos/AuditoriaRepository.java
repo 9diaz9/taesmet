@@ -1,0 +1,1 @@
+package io.bootify.taesmet_mtto.repos; import org.springframework.data.jpa.repository.*; import io.bootify.taesmet_mtto.domain.Auditoria; public interface AuditoriaRepository extends JpaRepository<Auditoria,Long>{ }
