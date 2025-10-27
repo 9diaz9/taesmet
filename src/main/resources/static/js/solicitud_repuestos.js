@@ -5,49 +5,91 @@ document.addEventListener('DOMContentLoaded', function () {
     initCharacterCounter();
     initAutoSave();
     initFormSubmission();
-    initHelpTips();
 });
 
 // Inicializar validación del formulario
 function initFormValidation() {
     const form = document.getElementById('solicitudForm');
     const textarea = form.querySelector('textarea[name="descripcion"]');
+    const motivo = form.querySelector('select[name="motivo"]');
+    const codigoMaquina = form.querySelector('input[name="codigoMaquina"]');
 
     if (textarea) {
-        textarea.addEventListener('blur', validateDescription);
-        textarea.addEventListener('input', clearError);
+        textarea.addEventListener('input', validateDescriptionRealTime);
+        textarea.addEventListener('blur', validateDescriptionRealTime);
+    }
+
+    if (motivo) {
+        motivo.addEventListener('change', validateMotivo);
+    }
+
+    if (codigoMaquina) {
+        codigoMaquina.addEventListener('input', validateCodigoMaquina);
     }
 }
 
-// Validar descripción
-function validateDescription(event) {
-    const textarea = event.target;
-    const value = textarea.value.trim();
-    const formGroup = textarea.closest('.form-group');
-    const charCount = value.length;
+// Validar motivo
+function validateMotivo(event) {
+    const select = event.target;
+    const formGroup = select.closest('.form-group');
+    const value = select.value;
 
-    // Remover estados previos
-    formGroup.classList.remove('error', 'success');
+    clearFieldError(formGroup);
 
-    // Remover mensajes de error existentes
-    const existingError = formGroup.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
-    }
-
-    // Validaciones
-    if (charCount === 0) {
-        showFieldError(formGroup, 'La descripción del repuesto es obligatoria');
+    if (!value) {
+        showFieldError(formGroup, 'El motivo es obligatorio');
         return false;
     }
 
-    if (charCount < 10) {
+    formGroup.classList.add('success');
+    return true;
+}
+
+// Validar código máquina
+function validateCodigoMaquina(event) {
+    const input = event.target;
+    const formGroup = input.closest('.form-group');
+    const value = input.value.trim();
+
+    clearFieldError(formGroup);
+
+    if (!value) {
+        showFieldError(formGroup, 'El código de máquina es obligatorio');
+        return false;
+    }
+
+    formGroup.classList.add('success');
+    return true;
+}
+
+// Validar descripción en tiempo real
+function validateDescriptionRealTime(event) {
+    const textarea = event.target;
+    const value = textarea.value.trim();
+    const formGroup = textarea.closest('.form-group');
+
+    // Limpiar estados previos
+    clearFieldError(formGroup);
+
+    // Validaciones básicas
+    if (value.length === 0) {
+        return false;
+    }
+
+    if (value.length < 10) {
         showFieldError(formGroup, 'La descripción debe tener al menos 10 caracteres');
         return false;
     }
 
-    if (charCount > 500) {
+    if (value.length > 500) {
         showFieldError(formGroup, 'La descripción no puede exceder los 500 caracteres');
+        return false;
+    }
+
+    // Validaciones avanzadas de contenido
+    const validationResult = validateTextContent(value);
+    if (!validationResult.isValid) {
+        showFieldError(formGroup, validationResult.message);
         return false;
     }
 
@@ -56,9 +98,118 @@ function validateDescription(event) {
     return true;
 }
 
+// Validar contenido del texto
+function validateTextContent(text) {
+    const words = text.toLowerCase()
+        .split(/\s+/)
+        .filter(word => word.length > 0)
+        .map(word => word.replace(/[.,!?;:()]/g, ''));
+
+    // 1. Validar mínimo de palabras
+    if (words.length < 5) {
+        return {
+            isValid: false,
+            message: 'La descripción debe tener al menos 5 palabras'
+        };
+    }
+
+    // 2. Validar palabras repetidas consecutivas
+    const consecutiveRepeats = hasConsecutiveRepeatedWords(words);
+    if (consecutiveRepeats) {
+        return {
+            isValid: false,
+            message: 'No se permiten palabras repetidas consecutivas'
+        };
+    }
+
+    // 3. Validar caracteres repetidos excesivos
+    const excessiveRepeats = hasExcessiveRepeatedCharacters(text);
+    if (excessiveRepeats) {
+        return {
+            isValid: false,
+            message: 'No se permiten secuencias de caracteres repetidos (como "aaaa", "cccc")'
+        };
+    }
+
+    // 4. Validar palabras sin sentido (sin vocales o muy cortas repetidas)
+    const nonsenseWords = hasNonsenseWords(words);
+    if (nonsenseWords) {
+        return {
+            isValid: false,
+            message: 'El texto contiene palabras sin sentido o incoherentes'
+        };
+    }
+
+    // 5. Validar diversidad léxica
+    const uniqueWords = new Set(words);
+    const diversityRatio = uniqueWords.size / words.length;
+    if (diversityRatio < 0.3 && words.length > 8) {
+        return {
+            isValid: false,
+            message: 'El texto es muy repetitivo. Usa más variedad de palabras'
+        };
+    }
+
+    return { isValid: true, message: '' };
+}
+
+// Verificar palabras repetidas consecutivas
+function hasConsecutiveRepeatedWords(words) {
+    for (let i = 0; i < words.length - 1; i++) {
+        if (words[i] === words[i + 1] && words[i].length > 2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Verificar caracteres repetidos excesivos
+function hasExcessiveRepeatedCharacters(text) {
+    // Patrones de caracteres repetidos (4 o más del mismo carácter consecutivo)
+    const repeatPattern = /(.)\1{3,}/;
+    return repeatPattern.test(text);
+}
+
+// Verificar palabras sin sentido
+function hasNonsenseWords(words) {
+    const nonsensePatterns = [
+        /^[^aeiou]{4,}$/i, // Palabras sin vocales de 4+ caracteres
+        /^[a-z]{1,2}$/i,   // Palabras muy cortas (1-2 letras) repetidas
+        /^[aeiou]{4,}$/i,  // Solo vocales repetidas
+        /^[bcdfghjklmnpqrstvwxyz]{4,}$/i // Solo consonantes
+    ];
+
+    let shortWordCount = 0;
+    
+    for (const word of words) {
+        // Contar palabras muy cortas
+        if (word.length <= 2) {
+            shortWordCount++;
+            if (shortWordCount > 3) {
+                return true;
+            }
+        }
+
+        // Verificar patrones sin sentido
+        for (const pattern of nonsensePatterns) {
+            if (pattern.test(word) && word.length >= 4) {
+                return true;
+            }
+        }
+
+        // Palabras con caracteres repetidos
+        if (/(.)\1{2,}/.test(word) && word.length >= 4) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Mostrar error en campo
 function showFieldError(formGroup, message) {
     formGroup.classList.add('error');
+    formGroup.classList.remove('success');
 
     const errorElement = document.createElement('div');
     errorElement.className = 'error-message';
@@ -68,14 +219,40 @@ function showFieldError(formGroup, message) {
 }
 
 // Limpiar error
-function clearError(event) {
-    const formGroup = event.target.closest('.form-group');
-    formGroup.classList.remove('error');
+function clearFieldError(formGroup) {
+    formGroup.classList.remove('error', 'success');
 
     const existingError = formGroup.querySelector('.error-message');
     if (existingError) {
         existingError.remove();
     }
+}
+
+// Validar formulario completo
+function validateForm() {
+    const form = document.getElementById('solicitudForm');
+    const motivo = form.querySelector('select[name="motivo"]');
+    const codigoMaquina = form.querySelector('input[name="codigoMaquina"]');
+    const descripcion = form.querySelector('textarea[name="descripcion"]');
+
+    let isValid = true;
+
+    // Validar motivo
+    if (!validateMotivo({ target: motivo })) {
+        isValid = false;
+    }
+
+    // Validar código máquina
+    if (!validateCodigoMaquina({ target: codigoMaquina })) {
+        isValid = false;
+    }
+
+    // Validar descripción
+    if (!validateDescriptionRealTime({ target: descripcion })) {
+        isValid = false;
+    }
+
+    return isValid;
 }
 
 // Contador de caracteres
@@ -125,6 +302,11 @@ function initAutoSave() {
         if (counter) {
             counter.textContent = `${savedData.length}/500`;
         }
+
+        // Validar contenido cargado
+        setTimeout(() => {
+            validateDescriptionRealTime({ target: textarea });
+        }, 100);
     }
 
     // Guardar en tiempo real
@@ -139,22 +321,24 @@ function initAutoSave() {
     });
 }
 
-// Envío del formulario - CORREGIDO
+// Envío del formulario
 function initFormSubmission() {
     const form = document.getElementById('solicitudForm');
 
     form.addEventListener('submit', function (event) {
         console.log('🔵 Formulario enviado - validando...');
 
-        // Validar antes de enviar
-        const textarea = form.querySelector('textarea[name="descripcion"]');
-        const fakeEvent = { target: textarea };
-
-        if (!validateDescription(fakeEvent)) {
+        if (!validateForm()) {
             console.log('❌ Validación fallida');
             event.preventDefault();
             showNotification('Por favor corrige los errores en el formulario', 'error');
-            textarea.focus();
+            
+            // Enfocar el primer campo con error
+            const firstError = form.querySelector('.error');
+            if (firstError) {
+                const input = firstError.querySelector('input, select, textarea');
+                if (input) input.focus();
+            }
             return;
         }
 
@@ -224,7 +408,7 @@ function handleModalEscapeKey(event) {
     }
 }
 
-// Enviar formulario - CORREGIDO
+// Enviar formulario
 function submitForm() {
     const form = document.getElementById('solicitudForm');
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -278,23 +462,6 @@ function showNotification(message, type = 'info') {
         <button class="notification-close" onclick="this.parentElement.remove()">
             <i class="bi bi-x"></i>
         </button>
-    `;
-
-    // Estilos básicos para la notificación
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
-        color: white;
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        max-width: 400px;
     `;
 
     document.body.appendChild(notification);

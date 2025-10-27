@@ -1,6 +1,7 @@
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\controller\TecnicoController.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\service\UsuarioDetailsService.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\domain\Maquina.java
+C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\domain\EstadoSolicitud.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\domain\CondicionMaquina.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\TaesmetMttoApplication.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\domain\RepuestoSolicitud.java
@@ -8,6 +9,7 @@ C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mt
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\repos\MaquinaRepository.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\controller\RolDashboardsController.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\repos\UsuarioRepository.java
+C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\controller\TecnicoApiController.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\config\DataLoader.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\config\CsrfAdvice.java
 C:\Users\Usuario\Documents\ProyectoN\taesmet\src\main\java\io\bootify\taesmet_mtto\domain\Mantenimiento.java

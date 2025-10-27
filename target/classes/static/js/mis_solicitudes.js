@@ -1,5 +1,6 @@
 // Funcionalidades para la página de Mis Solicitudes
 document.addEventListener('DOMContentLoaded', function () {
+    console.log("cargando aquiii")
     initFilters();
     initStats();
     initExpandableCards();
@@ -95,7 +96,10 @@ function initStats() {
     const cards = document.querySelectorAll('.solicitud-card');
     let pendientes = 0;
     let aprobadas = 0;
+    let rechazadas = 0;
+    let procesadas = 0;
     let recientes = 0;
+    
     const hoy = new Date();
     const unaSemanaAtras = new Date(hoy);
     unaSemanaAtras.setDate(hoy.getDate() - 7);
@@ -104,18 +108,26 @@ function initStats() {
         const estado = card.getAttribute('data-estado');
         const fecha = new Date(card.getAttribute('data-fecha'));
 
+        // Contar por estado
         if (estado === 'PENDIENTE') pendientes++;
         if (estado === 'APROBADA') aprobadas++;
+        if (estado === 'RECHAZADA') rechazadas++;
+        if (estado === 'PROCESADA') procesadas++;
+        
+        // Contar recientes (última semana)
         if (fecha >= unaSemanaAtras) recientes++;
     });
 
+    // Actualizar elementos en el DOM
+    const totalElement = document.getElementById('totalSolicitudes');
     const pendingElement = document.getElementById('pendingSolicitudes');
     const approvedElement = document.getElementById('approvedSolicitudes');
-    const recentElement = document.getElementById('recentSolicitudes');
+    const processedElement = document.getElementById('processedSolicitudes');
 
+    if (totalElement) totalElement.textContent = cards.length;
     if (pendingElement) pendingElement.textContent = pendientes;
     if (approvedElement) approvedElement.textContent = aprobadas;
-    if (recentElement) recentElement.textContent = recientes;
+    if (processedElement) processedElement.textContent = procesadas;
 }
 
 // Tarjetas expandibles

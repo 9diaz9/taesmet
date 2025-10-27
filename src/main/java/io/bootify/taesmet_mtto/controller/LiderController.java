@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -204,10 +206,84 @@ public class LiderController {
     }
 
     /* ====== Repuestos solicitados ====== */
+    // En LiderController.java - agregar estos métodos:
+
+    /* ====== Gestión de Repuestos Solicitados ====== */
     @GetMapping("/repuestos")
     public String repuestos(Model m) {
         List<RepuestoSolicitud> solicitudes = repRepo.findAllByOrderByCreadaEnDesc();
         m.addAttribute("solicitudes", solicitudes);
+        m.addAttribute("estadosSolicitud", EstadoSolicitud.values());
         return "lider/repuestos";
+    }
+
+    @PostMapping("/repuestos/{id}/aprobar")
+    public String aprobarSolicitud(@PathVariable("id") Long id,
+            @RequestParam(value = "observaciones", required = false) String observaciones,
+            RedirectAttributes redirectAttributes) {
+        try {
+            RepuestoSolicitud solicitud = repRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+            solicitud.setEstado(EstadoSolicitud.APROBADA);
+            solicitud.setAprobado(true);
+            solicitud.setObservaciones(observaciones);
+            solicitud.setActualizadaEn(LocalDateTime.now());
+
+            repRepo.save(solicitud);
+
+            redirectAttributes.addFlashAttribute("success", "Solicitud aprobada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar la solicitud: " + e.getMessage());
+        }
+
+        return "redirect:/lider/repuestos";
+    }
+
+    @PostMapping("/repuestos/{id}/rechazar")
+    public String rechazarSolicitud(@PathVariable("id") Long id,
+            @RequestParam(value = "observaciones", required = false) String observaciones,
+            RedirectAttributes redirectAttributes) {
+        try {
+            RepuestoSolicitud solicitud = repRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+            solicitud.setEstado(EstadoSolicitud.RECHAZADA);
+            solicitud.setAprobado(false);
+            solicitud.setObservaciones(observaciones);
+            solicitud.setActualizadaEn(LocalDateTime.now());
+
+            repRepo.save(solicitud);
+
+            redirectAttributes.addFlashAttribute("success", "Solicitud rechazada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar la solicitud: " + e.getMessage());
+        }
+
+        return "redirect:/lider/repuestos";
+    }
+
+    @PostMapping("/repuestos/{id}/procesar")
+    public String procesarSolicitud(@PathVariable("id") Long id,
+            @RequestParam(value = "observaciones", required = false) String observaciones,
+            RedirectAttributes redirectAttributes) {
+        try {
+            RepuestoSolicitud solicitud = repRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+            solicitud.setEstado(EstadoSolicitud.PROCESADA);
+            if (observaciones != null) {
+                solicitud.setObservaciones(observaciones);
+            }
+            solicitud.setActualizadaEn(LocalDateTime.now());
+
+            repRepo.save(solicitud);
+
+            redirectAttributes.addFlashAttribute("success", "Solicitud marcada como procesada");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
+        }
+
+        return "redirect:/lider/repuestos";
     }
 }

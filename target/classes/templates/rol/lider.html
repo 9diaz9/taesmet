@@ -1,125 +1,150 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Líder</title>
+
+  <!-- CDN seguro y actualizado de Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Estilo personalizado -->
   <link rel="stylesheet" href="/css/lider.css">
 </head>
 
-<body>
-  <nav class="admin-navbar">
-    <div class="nav-container">
-      <a href="/lider" class="nav-brand">
-        <i class="bi bi-speedometer2"></i>
-        <span>Panel de Líder</span>
+<body class="bg-dark text-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/lider">
+        <i class="bi bi-speedometer2 me-2"></i>Panel de Líder
       </a>
-      <div class="nav-menu">
-        <a href="/lider" class="nav-link active">Inicio</a>
-        <a href="/lider/maquinas" class="nav-link">Máquinas</a>
-        <a href="/lider/mantenimientos" class="nav-link">Mantenimientos</a>
-        <a href="/lider/repuestos" class="nav-link">Repuestos</a>
-        <form th:action="@{/logout}" method="post" class="nav-form">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button type="submit" class="btn-logout">
-            <i class="bi bi-box-arrow-right"></i>
-            <span>Salir</span>
-          </button>
-        </form>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+            <form th:action="@{/logout}" method="post" class="d-inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit"
+                      class="btn btn-outline-light ms-lg-3 d-lg-inline w-100 w-lg-auto">
+                <i class="bi bi-box-arrow-right me-1"></i> Salir
+              </button>
+            </form>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
 
-  <main class="main-container">
-    <div class="welcome-section">
-      <h2 class="welcome-title">Bienvenido al Panel de Líder</h2>
-      <p class="welcome-subtitle">Gestiona tus recursos y mantenimientos de forma eficiente</p>
+  <main class="container my-5">
+    <h2 class="text-center mb-4 fw-bold text-warning">Bienvenido al Panel de Líder</h2>
+    </button>
+  </form>
+</li>
+        </ul>
+      </div>
     </div>
+  </nav>
+
+  <main class="container my-5">
+    <h2 class="text-center mb-4 fw-bold text-warning">Bienvenido al Panel de Líder</h2>
 
     <!-- Tarjetas de opciones -->
-    <div class="cards-grid">
-      <a href="/lider/maquinas" class="option-card">
-        <div class="card-icon">
-          <i class="bi bi-cpu"></i>
-        </div>
-        <h3 class="card-title">Máquinas</h3>
-        <p class="card-description">Ver y crear máquinas registradas</p>
-        <div class="card-hover-effect"></div>
-      </a>
-
-      <a href="/lider/mantenimientos" class="option-card">
-        <div class="card-icon">
-          <i class="bi bi-wrench"></i>
-        </div>
-        <h3 class="card-title">Mantenimientos</h3>
-        <p class="card-description">Asignar o revisar mantenimientos</p>
-        <div class="card-hover-effect"></div>
-      </a>
-
-      <a href="/lider/repuestos" class="option-card">
-        <div class="card-icon">
-          <i class="bi bi-box-seam"></i>
-        </div>
-        <h3 class="card-title">Repuestos</h3>
-        <p class="card-description">Ver solicitudes de técnicos</p>
-        <div class="card-hover-effect"></div>
-      </a>
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <a href="/lider/maquinas" class="card option-card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-cpu display-5 text-primary"></i>
+            <h5 class="mt-3 text-light">Máquinas</h5>
+            <p class="small text-secondary">Ver y crear máquinas registradas</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="/lider/mantenimientos" class="card option-card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-wrench display-5 text-info"></i>
+            <h5 class="mt-3 text-light">Mantenimientos</h5>
+            <p class="small text-secondary">Asignar o revisar mantenimientos</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="/lider/repuestos" class="card option-card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-box-seam display-5 text-success"></i>
+            <h5 class="mt-3 text-light">Repuestos</h5>
+            <p class="small text-secondary">Ver solicitudes de técnicos</p>
+          </div>
+        </a>
+      </div>
     </div>
 
-    <!-- Sección de estadísticas rápidas -->
-    <div class="quick-stats">
-      <h3 class="stats-title">Resumen Rápido</h3>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-icon pending">
-            <i class="bi bi-clock"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value" th:text="${pendientes}">0</span>
-            <span class="stat-label">Pendientes</span>
+    <!-- Estadísticas -->
+    <div class="card bg-secondary-subtle text-dark p-4 shadow-sm">
+      <h4 class="text-center mb-4 fw-bold text-primary">Resumen de Mantenimientos</h4>
+      <div class="row text-center">
+        <div class="col-md-3 mb-3">
+          <div class="stat-box bg-primary text-white rounded p-3 shadow-sm">
+            <h5>Pendientes</h5>
+            <h3 th:text="${pendientes}">0</h3>
           </div>
         </div>
-
-        <div class="stat-item">
-          <div class="stat-icon in-progress">
-            <i class="bi bi-gear"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value" th:text="${enProceso}">0</span>
-            <span class="stat-label">En Proceso</span>
+        <div class="col-md-3 mb-3">
+          <div class="stat-box bg-warning text-dark rounded p-3 shadow-sm">
+            <h5>En Proceso</h5>
+            <h3 th:text="${enProceso}">0</h3>
           </div>
         </div>
-
-        <div class="stat-item">
-          <div class="stat-icon completed">
-            <i class="bi bi-check-circle"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value" th:text="${realizados}">0</span>
-            <span class="stat-label">Realizados</span>
+        <div class="col-md-3 mb-3">
+          <div class="stat-box bg-success text-white rounded p-3 shadow-sm">
+            <h5>Realizados</h5>
+            <h3 th:text="${realizados}">0</h3>
           </div>
         </div>
-
-        <div class="stat-item">
-          <div class="stat-icon waiting">
-            <i class="bi bi-hourglass"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value" th:text="${esperaRepuestos}">0</span>
-            <span class="stat-label">En Espera</span>
+        <div class="col-md-3 mb-3">
+          <div class="stat-box bg-danger text-white rounded p-3 shadow-sm">
+            <h5>En Espera</h5>
+            <h3 th:text="${esperaRepuestos}">0</h3>
           </div>
         </div>
+      </div>
+      <div class="mt-5 text-center">
+        <canvas id="mttoChart" height="150"></canvas>
       </div>
     </div>
   </main>
 
-  <footer class="footer">
-    <p>© 2025 TAESMET - Panel de Líder</p>
+  <footer class="text-center mt-5 py-3 text-secondary small">
+    © 2025 TAESMET - Panel de Líder
   </footer>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <script src="/js/lider.js"></script>
-</body>
+  <!-- JS Bootstrap + Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script th:inline="javascript">
+    const dataPend = /*[[${pendientes}]]*/ 0;
+    const dataProc = /*[[${enProceso}]]*/ 0;
+    const dataDone = /*[[${realizados}]]*/ 0;
+    const dataRep  = /*[[${esperaRepuestos}]]*/ 0;
 
+    const ctx = document.getElementById('mttoChart');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pendientes', 'En proceso', 'Realizados', 'En espera'],
+        datasets: [{
+          data: [dataPend, dataProc, dataDone, dataRep],
+          backgroundColor: ['#0d6efd', '#ffc107', '#198754', '#dc3545']
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } },
+        cutout: '70%'
+      }
+    });
+  </script>
+</body>
 </html>

@@ -24,9 +24,11 @@ io\bootify\taesmet_mtto\util\TipoMaquinaLabel.class
 io\bootify\taesmet_mtto\domain\Maquina.class
 io\bootify\taesmet_mtto\controller\LiderController.class
 io\bootify\taesmet_mtto\util\TipoMaquinaLabel$1.class
+io\bootify\taesmet_mtto\controller\TecnicoApiController.class
 io\bootify\taesmet_mtto\domain\TipoMaquina.class
 io\bootify\taesmet_mtto\controller\TipoMaquinaLabel.class
 io\bootify\taesmet_mtto\controller\TecnicoController.class
+io\bootify\taesmet_mtto\domain\EstadoSolicitud.class
 io\bootify\taesmet_mtto\dto\UsuarioForm.class
 io\bootify\taesmet_mtto\repos\MaquinaRepository.class
 io\bootify\taesmet_mtto\repos\RepuestoSolicitudRepository.class

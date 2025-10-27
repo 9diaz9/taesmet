@@ -111,6 +111,7 @@ public class TecnicoController {
     /**
      * MIS SOLICITUDES - Ver todas las solicitudes del técnico
      */
+
     @GetMapping("/mis-solicitudes")
     public String misSolicitudes(@AuthenticationPrincipal User user, Model model) {
         System.out.println("🎯 === EJECUTANDO MIS_SOLICITUDES ===");
@@ -127,6 +128,16 @@ public class TecnicoController {
         // Obtener todas las solicitudes del técnico
         List<RepuestoSolicitud> solicitudes = solicitudRepo.findByMantenimientoAsignadoAOrderByCreadaEnDesc(u);
         System.out.println("🎯 Solicitudes encontradas: " + solicitudes.size());
+
+        // Log para debug
+        for (RepuestoSolicitud sol : solicitudes) {
+            System.out.println("Solicitud ID: " + sol.getId() +
+                    ", Mantenimiento: " + (sol.getMantenimiento() != null ? sol.getMantenimiento().getId() : "NULL") +
+                    ", Máquina: "
+                    + (sol.getMantenimiento() != null && sol.getMantenimiento().getMaquina() != null
+                            ? sol.getMantenimiento().getMaquina().getNombre()
+                            : "NULL"));
+        }
 
         model.addAttribute("solicitudes", solicitudes);
         model.addAttribute("yo", u);
