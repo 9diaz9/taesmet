@@ -7,6 +7,13 @@ import java.time.LocalDateTime;
 @Entity
 public class Mantenimiento {
 
+@Transient
+private Boolean tieneSolicitud;
+
+public Boolean getTieneSolicitud() { return tieneSolicitud; }
+public void setTieneSolicitud(Boolean tieneSolicitud) { this.tieneSolicitud = tieneSolicitud; }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
