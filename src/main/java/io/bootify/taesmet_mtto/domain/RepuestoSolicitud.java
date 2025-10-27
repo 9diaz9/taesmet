@@ -1,4 +1,3 @@
-// src/main/java/io/bootify/taesmet_mtto/domain/RepuestoSolicitud.java
 package io.bootify.taesmet_mtto.domain;
 
 import jakarta.persistence.*;

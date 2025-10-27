@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.List.of;
 
@@ -39,17 +38,17 @@ public class LiderController {
     }
 
     /* ================= Dashboard ================= */
-    @GetMapping({"", "/"})
+    @GetMapping({ "", "/" })
     public String dashboard(Model m) {
         long pendientes = mantRepo.countByEstado(EstadoMantenimiento.PENDIENTE);
-        long enProceso  = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
+        long enProceso = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
         long realizados = mantRepo.countByEstado(EstadoMantenimiento.REALIZADO);
-        long esperaRep  = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
+        long esperaRep = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
 
-        Page<Mantenimiento> pageProx = mantRepo
+        List<Mantenimiento> proximos = mantRepo
                 .findByProgramadoParaGreaterThanEqualOrderByProgramadoParaAsc(
-                        LocalDate.now(), PageRequest.of(0, 5)
-                );
+                        LocalDate.now(), PageRequest.of(0, 5))
+                .getContent();
 
         m.addAttribute("pendientes", pendientes);
         m.addAttribute("enProceso", enProceso);
@@ -171,7 +170,7 @@ public class LiderController {
         m.addAttribute("maquinas", maquinaRepo.findAll());
         m.addAttribute("tecnicos", usuarioRepo.findTecnicosActivos());
         m.addAttribute("selMaquinaId", maquinaId);
-        return "lider/mantenimientos"; // templates/lider/mantenimientos.html
+        return "lider/mantenimientos";
     }
 
     @PostMapping("/mantenimientos/asignar")
@@ -199,7 +198,6 @@ public class LiderController {
             m.setProgramadoPara(LocalDate.parse(programadoPara));
         }
         m.setDescripcion(descripcion);
-        // m.setDescripcionEjecucion(""); // Descomenta si tu columna es NOT NULL
         mantRepo.save(m);
 
         return "redirect:/lider/mantenimientos?ok";
@@ -208,9 +206,8 @@ public class LiderController {
     /* ====== Repuestos solicitados ====== */
     @GetMapping("/repuestos")
     public String repuestos(Model m) {
-        // mejor ordenados por fecha de creación (agrega el método en el repo)
         List<RepuestoSolicitud> solicitudes = repRepo.findAllByOrderByCreadaEnDesc();
         m.addAttribute("solicitudes", solicitudes);
-        return "lider/repuestos"; // templates/lider/repuestos.html
+        return "lider/repuestos";
     }
 }

@@ -1,150 +1,252 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mis Mantenimientos | Técnico</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#0b1220; --card:#0f172a; --muted:#94a3b8; --accent:#0ea5e9; --warn:#f59e0b; --ok:#22c55e;
-    }
-    body{
-      background:
-        radial-gradient(1200px 600px at 80% -100px, #12213f 0%, transparent 60%) no-repeat,
-        radial-gradient(900px 500px at -10% 120%, #13233f 0%, transparent 55%) no-repeat,
-        var(--bg);
-      color:#e5e7eb;
-    }
-    .navbar{backdrop-filter: blur(6px)}
-    .cardx{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)), var(--card);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.35);
-    }
-    .table-dark{--bs-table-bg:#0b1324; --bs-table-striped-bg:#0f1625}
-    .badge-role{letter-spacing:.3px}
-    .form-select, .form-control{background:#0b1324; color:#e5e7eb; border-color:#1f2a44}
-    .form-select:focus, .form-control:focus{border-color:var(--accent); box-shadow:0 0 0 .2rem rgba(14,165,233,.15)}
-    a.btn-outline-light{--bs-btn-color:#e5e7eb; --bs-btn-border-color:#475569}
-  </style>
+  <link rel="stylesheet" href="/css/mios.css">
 </head>
+
 <body>
-
-<nav class="navbar navbar-dark bg-dark sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="/tecnico"><i class="bi bi-wrench-adjustable-circle me-2"></i>Panel Técnico</a>
-    <div class="d-flex gap-2">
-      <a class="btn btn-outline-light btn-sm" th:href="@{/tecnico}"><i class="bi bi-house me-1"></i>Inicio</a>
-      <form th:action="@{/logout}" method="post" class="d-inline">
-        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
-        <button class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
-      </form>
+  <!-- Navbar -->
+  <nav class="admin-navbar">
+    <div class="nav-container">
+      <a href="/tecnico" class="nav-brand">
+        <i class="bi bi-tools"></i>
+        <span>Panel de Técnico</span>
+      </a>
+      <div class="nav-menu">
+        <a href="/tecnico" class="nav-link">Inicio</a>
+        <a href="/tecnico/mios" class="nav-link active">Mis Mantenimientos</a>
+        <a href="/tecnico/mis-solicitudes" class="nav-link">Mis Solicitudes</a>
+        <form th:action="@{/logout}" method="post" class="nav-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="btn-logout">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Salir</span>
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
-<main class="container my-5">
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h2 class="fw-bold text-warning m-0">Mis Mantenimientos</h2>
-      <div class="text-secondary" th:text="'Asignados a ' + (${yo} != null ? ${yo.nombre} : 'Técnico')">Asignados a Técnico</div>
+  <main class="main-container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">Mis Mantenimientos</h1>
+        <p class="page-subtitle">Gestiona las órdenes de trabajo asignadas a ti</p>
+      </div>
+      <div class="header-actions">
+        <a href="/tecnico" class="btn-secondary">
+          <i class="bi bi-arrow-left"></i>
+          <span>Volver al Inicio</span>
+        </a>
+        <a href="/tecnico/crear-solicitud" class="btn-primary">
+          <i class="bi bi-plus-circle"></i>
+          <span>Crear Solicitud</span>
+        </a>
+      </div>
     </div>
-    <a th:href="@{/tecnico}" class="btn btn-outline-light"><i class="bi bi-speedometer2 me-1"></i>Panel</a>
-  </div>
 
-  <!-- Alertas -->
-  <div th:if="${param.ok}" class="alert alert-success alert-dismissible fade show" role="alert">
-    <i class="bi bi-check-circle me-1"></i> Operación realizada con éxito.
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <div th:if="${param.estadoOk}" class="alert alert-info alert-dismissible fade show" role="alert">
-    <i class="bi bi-info-circle me-1"></i> Estado actualizado.
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <div th:if="${param.solOk}" class="alert alert-success alert-dismissible fade show" role="alert">
-    <i class="bi bi-box-seam me-1"></i> Solicitud de repuesto enviada.
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <div th:if="${param.mttoNotFound}" class="alert alert-danger alert-dismissible fade show" role="alert">
-    <i class="bi bi-x-circle me-1"></i> El mantenimiento no existe.
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-
-  <div class="cardx p-3">
-    <div class="table-responsive">
-      <table class="table table-dark table-hover align-middle mb-0">
-        <thead>
-          <tr>
-            <th style="width:70px">ID</th>
-            <th style="width:160px">Código Máquina</th>
-            <th>Nombre</th>
-            <th style="width:200px">Estado</th>
-            <th style="width:320px" class="text-end">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="mt : ${mttos}">
-            <td th:text="${mt.id}">1</td>
-
-            <!-- OJO: sin ${} anidados -->
-            <td th:text="${mt.maquina != null ? mt.maquina.codigo : '-'}">MAQ-001</td>
-            <td th:text="${mt.maquina != null ? mt.maquina.nombre : '-'}">Nombre de máquina</td>
-
-            <td>
-              <span class="badge"
-                    th:text="${mt.estado != null ? mt.estado : '—'}"
-                    th:classappend="${mt.estado} != null && ${mt.estado.name()} == 'PENDIENTE' ? ' text-bg-warning' :
-                                    (${mt.estado} != null && ${mt.estado.name()} == 'EN_PROCESO' ? ' text-bg-info' :
-                                    (${mt.estado} != null && ${mt.estado.name()} == 'REALIZADO' ? ' text-bg-success' : ' text-bg-secondary'))">
-                PENDIENTE
-              </span>
-
-              <span th:if="${solicitados != null and solicitados[mt.id] == true}" class="badge text-bg-primary ms-1">
-                <i class="bi bi-box-seam me-1"></i>Repuesto solicitado
-              </span>
-            </td>
-
-            <td class="text-end">
-              <!-- Cambiar estado (usa valores EXACTOS del enum) -->
-              <form th:action="@{/tecnico/mttos/{id}/estado(id=${mt.id})}" method="post" class="d-inline-flex align-items-center gap-2">
-                <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
-                <select name="nuevo" class="form-select form-select-sm" style="width:170px">
-                  <option value="PENDIENTE"
-                          th:selected="${mt.estado} != null and ${mt.estado.name()} == 'PENDIENTE'">Pendiente</option>
-                  <option value="EN_PROCESO"
-                          th:selected="${mt.estado} != null and ${mt.estado.name()} == 'EN_PROCESO'">En proceso</option>
-                  <option value="REALIZADO"
-                          th:selected="${mt.estado} != null and ${mt.estado.name()} == 'REALIZADO'">Realizado</option>
-                  <option value="EN_ESPERA_REPUESTOS"
-                          th:selected="${mt.estado} != null and ${mt.estado.name()} == 'EN_ESPERA_REPUESTOS'">En espera de repuestos</option>
-                </select>
-                <button class="btn btn-sm btn-outline-warning">
-                  <i class="bi bi-save me-1"></i>Guardar
-                </button>
-              </form>
-
-              <!-- Solicitar repuesto -->
-              <a class="btn btn-sm btn-primary ms-2"
-                 th:href="@{/tecnico/repuestos/solicitar/{mttoId}(mttoId=${mt.id})}">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Solicitar repuesto
-              </a>
-            </td>
-          </tr>
-
-          <tr th:if="${mttos == null or #lists.isEmpty(mttos)}">
-            <td colspan="5" class="text-center text-secondary py-4">Aún no tienes mantenimientos asignados.</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Filtros -->
+    <div class="filters-card">
+      <div class="filters-header">
+        <i class="bi bi-funnel"></i>
+        <h3>Filtros</h3>
+      </div>
+      <div class="filters-body">
+        <div class="filter-group">
+          <label for="filterEstado">Estado:</label>
+          <select id="filterEstado" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="EN_PROCESO">En Proceso</option>
+            <option value="EN_ESPERA">En Espera</option>
+            <option value="FALTA_REPUESTOS">Falta Repuestos</option>
+            <option value="COMPLETADO">Completado</option>
+            <option value="REALIZADO">Realizado</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterTipo">Tipo:</label>
+          <select id="filterTipo" class="filter-select">
+            <option value="">Todos los tipos</option>
+            <option value="CRITICO">Crítico</option>
+            <option value="PREVENTIVO_ELECTRICO">Preventivo Eléctrico</option>
+            <option value="PREVENTIVO_MECANICO">Preventivo Mecánico</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterSearch">Buscar:</label>
+          <input type="text" id="filterSearch" class="filter-input" placeholder="Buscar por máquina...">
+        </div>
+        <button type="button" class="btn-clear-filters" onclick="clearFilters()">
+          <i class="bi bi-x-circle"></i>
+          <span>Limpiar</span>
+        </button>
+      </div>
     </div>
-  </div>
-</main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Estadísticas Rápidas -->
+    <div class="quick-stats">
+      <div class="stat-item">
+        <span class="stat-number" id="totalMttos" th:text="${mttos != null ? mttos.size() : 0}">0</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number pending" id="pendingMttos">0</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number in-progress" id="progressMttos">0</span>
+        <span class="stat-label">En Proceso</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number completed" id="completedMttos">0</span>
+        <span class="stat-label">Completados</span>
+      </div>
+    </div>
+
+    <!-- Lista de Mantenimientos -->
+    <div class="mantenimientos-section">
+      <div class="section-header">
+        <h2 class="section-title">Lista de Mantenimientos</h2>
+        <div class="section-actions">
+          <button type="button" class="btn-refresh" onclick="loadMantenimientos()" title="Actualizar">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mantenimientos-list" id="mantenimientosList">
+        <!-- Mantenimientos cargados desde el servidor -->
+        <div th:if="${mttos != null and !mttos.empty}" class="mantenimientos-container">
+          <div th:each="mtto : ${mttos}" class="mantenimiento-card" th:data-estado="${mtto.estado.name()}"
+            th:data-tipo="${mtto.tipo.name()}">
+            <div class="mantenimiento-header">
+              <div class="mantenimiento-title">
+                <h3 th:text="'MT-' + ${mtto.id} + ' - ' + ${mtto.maquina?.codigo}">MT-001 - PHT-001</h3>
+                <span th:classappend="'status-badge status-' + ${mtto.estado.name().toLowerCase()}"
+                  th:text="${mtto.estado.name()}">PENDIENTE</span>
+              </div>
+              <div class="mantenimiento-actions">
+                <div class="action-group">
+                  <button type="button" class="btn-action btn-info" onclick="showDetails(this)" title="Ver detalles">
+                    <i class="bi bi-info-circle"></i>
+                  </button>
+                  <button type="button" class="btn-action btn-edit" onclick="changeEstado(this)" title="Cambiar estado">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <a th:href="@{/tecnico/repuestos/solicitar/{id}(id=${mtto.id})}" class="btn-action btn-request"
+                    th:if="${!solicitados.get(mtto.id)}" title="Solicitar repuesto">
+                    <i class="bi bi-box-seam"></i>
+                  </a>
+                  <span th:if="${solicitados.get(mtto.id)}" class="solicitud-badge" title="Solicitud enviada">
+                    <i class="bi bi-check-circle"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mantenimiento-body">
+              <div class="mantenimiento-details">
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <label>Máquina:</label>
+                    <span th:text="${mtto.maquina?.nombre} ?: 'N/A'">Prensa Hidráulica</span>
+                  </div>
+                  <div class="detail-item">
+                    <label>Tipo:</label>
+                    <span th:text="${mtto.tipo}">PREVENTIVO</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <label>Programado:</label>
+                    <span th:text="${mtto.programadoPara} ?: 'No programado'">2024-01-15</span>
+                  </div>
+                  <div class="detail-item">
+                    <label>Asignado:</label>
+                    <span th:text="${mtto.creadoEn}">2024-01-10</span>
+                  </div>
+                </div>
+                <div class="detail-row" th:if="${mtto.descripcion}">
+                  <div class="detail-item full-width">
+                    <label>Descripción:</label>
+                    <span th:text="${mtto.descripcion}">Mantenimiento preventivo programado</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detalles expandibles -->
+            <div class="mantenimiento-expandable">
+              <div class="expandable-content">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Código Máquina:</label>
+                    <span th:text="${mtto.maquina?.codigo} ?: 'N/A'">PHT-001</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Tipo de Máquina:</label>
+                    <span th:text="${mtto.maquina?.tipo} ?: 'N/A'">PHT</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Condición:</label>
+                    <span th:text="${mtto.maquina?.condicion} ?: 'N/A'">USADA</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Fecha Creación:</label>
+                    <span th:text="${mtto.creadoEn}">2024-01-10 10:30:00</span>
+                  </div>
+                </div>
+
+                <!-- Acciones de estado -->
+                <div class="estado-actions"
+                  th:if="${mtto.estado.name() != 'COMPLETADO' and mtto.estado.name() != 'REALIZADO'}">
+                  <form th:action="@{/tecnico/mttos/{id}/estado(id=${mtto.id})}" method="post" class="estado-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <label>Cambiar estado:</label>
+                    <select name="nuevo" class="estado-select" onchange="this.form.submit()">
+                      <option value="">Seleccionar...</option>
+                      <option th:value="PENDIENTE" th:selected="${mtto.estado.name() == 'PENDIENTE'}">Pendiente</option>
+                      <option th:value="EN_PROCESO" th:selected="${mtto.estado.name() == 'EN_PROCESO'}">En Proceso
+                      </option>
+                      <option th:value="EN_ESPERA" th:selected="${mtto.estado.name() == 'EN_ESPERA'}">En Espera</option>
+                      <option th:value="FALTA_REPUESTOS" th:selected="${mtto.estado.name() == 'FALTA_REPUESTOS'}">Falta
+                        Repuestos</option>
+                      <option th:value="COMPLETADO" th:selected="${mtto.estado.name() == 'COMPLETADO'}">Completado
+                      </option>
+                    </select>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div th:if="${mttos == null or mttos.empty}" class="empty-state">
+          <div class="empty-icon">
+            <i class="bi bi-inbox"></i>
+          </div>
+          <h3>No hay mantenimientos asignados</h3>
+          <p>Actualmente no tienes órdenes de trabajo asignadas.</p>
+          <div class="empty-actions">
+            <a href="/tecnico" class="btn-primary">
+              <i class="bi bi-house"></i>
+              <span>Volver al Inicio</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <script src="/js/mios.js"></script>
 </body>
-</html>
 
+</html>

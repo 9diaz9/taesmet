@@ -7,7 +7,6 @@ io\bootify\taesmet_mtto\domain\RepuestoSolicitud.class
 io\bootify\taesmet_mtto\domain\CondicionMaquina.class
 io\bootify\taesmet_mtto\domain\Periodicidad.class
 io\bootify\taesmet_mtto\domain\Auditoria$AuditoriaBuilder.class
-io\bootify\taesmet_mtto\controller\RolDashboardsController.class
 io\bootify\taesmet_mtto\controller\AdminController.class
 io\bootify\taesmet_mtto\domain\EjecucionTag.class
 io\bootify\taesmet_mtto\domain\TipoMantenimiento.class
@@ -27,6 +26,7 @@ io\bootify\taesmet_mtto\controller\LiderController.class
 io\bootify\taesmet_mtto\util\TipoMaquinaLabel$1.class
 io\bootify\taesmet_mtto\domain\TipoMaquina.class
 io\bootify\taesmet_mtto\controller\TipoMaquinaLabel.class
+io\bootify\taesmet_mtto\controller\TecnicoController.class
 io\bootify\taesmet_mtto\dto\UsuarioForm.class
 io\bootify\taesmet_mtto\repos\MaquinaRepository.class
 io\bootify\taesmet_mtto\repos\RepuestoSolicitudRepository.class
