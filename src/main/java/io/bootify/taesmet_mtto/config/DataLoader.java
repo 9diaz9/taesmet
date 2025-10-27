@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DataLoader implements ApplicationRunner {
+public class DataLoader implements ApplicationRunner{
 
     private final UsuarioRepository repo;
     private final PasswordEncoder enc;

@@ -34,8 +34,8 @@ public class AdminController {
     private final PasswordEncoder encoder;
 
     public AdminController(UsuarioRepository usuarioRepo,
-                           MaquinaRepository maquinaRepo,
-                           PasswordEncoder encoder) {
+                            MaquinaRepository maquinaRepo,
+                            PasswordEncoder encoder) {
         this.usuarioRepo = usuarioRepo;
         this.maquinaRepo = maquinaRepo;
         this.encoder = encoder;
@@ -58,8 +58,8 @@ public class AdminController {
 
     @PostMapping("/usuarios")
     public String crearUsuario(@Valid @ModelAttribute("usuarioForm") UsuarioForm form,
-                               BindingResult br,
-                               Model m) {
+                                BindingResult br,
+                                Model m) {
 
         // email único
         if (!br.hasErrors() && usuarioRepo.findByEmailIgnoreCase(form.getEmail()).isPresent()) {
@@ -176,10 +176,10 @@ public class AdminController {
     /* ===== ELIMINAR ===== */
     @PostMapping("/maquinas/{id}/eliminar")
     public String eliminarMaquina(@PathVariable("id") Long id,
-                                  @RequestParam(value = "page", defaultValue = "0") int page,
-                                  @RequestParam(value = "size", defaultValue = "10") int size,
-                                  @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
-                                  @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
+                                    @RequestParam(value = "page", defaultValue = "0") int page,
+                                    @RequestParam(value = "size", defaultValue = "10") int size,
+                                    @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
+                                    @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
         maquinaRepo.deleteById(id);
         return "redirect:/admin/maquinas?page=" + page + "&size=" + size +
                 (tipo != null ? "&tipo=" + tipo : "") +

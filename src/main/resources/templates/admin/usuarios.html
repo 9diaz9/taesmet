@@ -68,62 +68,65 @@
 
         <form th:action="@{/admin/usuarios}" th:object="${usuarioForm}"
               method="post" class="row g-3 needs-validation" novalidate>
-          <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+<!-- DENTRO de la tarjeta "Crear nuevo usuario", reemplaza el contenido del form por esto -->
 
-          <!-- Errores globales -->
-          <div class="col-12" th:if="${#fields.hasErrors()}">
-            <div class="alert alert-danger mb-0">
-              <strong>Revisa los datos:</strong>
-              <ul class="mb-0 mt-2">
-                <li th:each="err : ${#fields.errors()}" th:text="${err}"></li>
-              </ul>
-            </div>
-          </div>
+<input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-          <!-- Nombre -->
-          <div class="col-12">
-            <label class="form-label">Nombre</label>
-            <input th:field="*{nombre}" class="form-control" placeholder="Nombre completo" required maxlength="60"
-                   pattern="^(?=.{2,60}$)(?!.*\d)(?!.*\b(?:jaja|jeje|jiji|jojo|haha|hehe|hihi|xd|ajaj|lol)\b)(?!.*(.)\1{3,})[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$"
-                   title="Solo letras y espacios; sin números ni repeticiones extrañas; 2–60 caracteres">
-            <div class="text-danger small" th:errors="*{nombre}"></div>
-          </div>
+<!-- Errores globales -->
+<div class="col-12" th:if="${#fields.hasErrors()}">
+  <div class="alert alert-danger mb-0">
+    <strong>Revisa los datos:</strong>
+    <ul class="mb-0 mt-2">
+      <li th:each="err : ${#fields.errors()}" th:text="${err}"></li>
+    </ul>
+  </div>
+</div>
 
-          <!-- Email -->
-          <div class="col-12">
-            <label class="form-label">Email (solo @taesmet.com)</label>
-            <input th:field="*{email}" class="form-control" placeholder="nombre@taesmet.com" required
-                   pattern="(?=.{5,64}$)[A-Za-z]{2,}(?:[._-][A-Za-z]+)*@taesmet\.com"
-                   title="Debe ser del dominio taesmet.com y con al menos 2 letras antes de @">
-            <div class="text-danger small" th:errors="*{email}"></div>
-          </div>
+<!-- Nombre -->
+<div class="col-12">
+  <label class="form-label">Nombre</label>
+  <input th:field="*{nombre}" class="form-control" placeholder="Nombre completo" required maxlength="60"
+         pattern="^(?=.{2,60}$)(?!.*\d)(?!.*\b(?:jaja|jeje|jiji|jojo|haha|hehe|hihi|xd|ajaj|lol)\b)(?!.*(.)\1{3,})[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$"
+         title="Solo letras y espacios; sin números ni repeticiones extrañas; 2–60 caracteres">
+  <div class="text-danger small" th:errors="*{nombre}"></div>
+</div>
 
-          <!-- Contraseña -->
-          <div class="col-12">
-            <label class="form-label">Contraseña</label>
-            <input type="password" th:field="*{plainPassword}" class="form-control" placeholder="••••••••" required
-                   minlength="8" maxlength="15"
-                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,15}"
-                   title="8–15 caracteres, con minúscula, mayúscula, dígito y carácter especial">
-            <div class="text-danger small" th:errors="*{plainPassword}"></div>
-            <div class="form-text">
-              Ejemplos válidos: <code>Peru2024#</code>, <code>Nicolas#12</code>, <code>52242002bB#</code>
-            </div>
-          </div>
+<!-- Email -->
+<div class="col-12">
+  <label class="form-label">Email (solo @taesmet.com)</label>
+  <input th:field="*{email}" class="form-control" placeholder="nombre@taesmet.com" required
+         pattern="(?=.{5,64}$)[A-Za-z]{2,}(?:[._-][A-Za-z]+)*@taesmet\.com"
+         title="Debe ser del dominio taesmet.com y con al menos 2 letras antes de @">
+  <div class="text-danger small" th:errors="*{email}"></div>
+</div>
 
-          <!-- Rol -->
-          <div class="col-12">
-            <label class="form-label">Rol</label>
-            <select th:field="*{rol}" class="form-select" required>
-              <option value="" disabled selected>Selecciona un rol...</option>
-              <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
-            </select>
-            <div class="text-danger small" th:errors="*{rol}"></div>
-          </div>
+<!-- Contraseña -->
+<div class="col-12">
+  <label class="form-label">Contraseña</label>
+  <input type="password" th:field="*{plainPassword}" class="form-control" placeholder="••••••••" required
+         minlength="8" maxlength="15"
+         pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,15}"
+         title="8–15 caracteres, con minúscula, mayúscula, dígito y carácter especial">
+  <div class="text-danger small" th:errors="*{plainPassword}"></div>
+  <div class="form-text">
+    Ejemplos válidos: <code>Peru2024#</code>, <code>Nicolas#12</code>, <code>52242002bB#</code>
+  </div>
+</div>
 
-          <div class="col-12 d-grid">
-            <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-save"></i> Crear usuario</button>
-          </div>
+<!-- Rol -->
+<div class="col-12">
+  <label class="form-label">Rol</label>
+  <select th:field="*{rol}" class="form-select" required>
+    <option value="" disabled selected>Selecciona un rol...</option>
+    <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+  </select>
+  <div class="text-danger small" th:errors="*{rol}"></div>
+</div>
+
+<div class="col-12 d-grid">
+  <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-save"></i> Crear usuario</button>
+</div>
+
         </form>
       </div>
     </div>

@@ -1,3 +1,4 @@
+// src/main/java/io/bootify/taesmet_mtto/controller/LiderController.java
 package io.bootify.taesmet_mtto.controller;
 
 import io.bootify.taesmet_mtto.domain.*;
@@ -5,7 +6,6 @@ import io.bootify.taesmet_mtto.repos.*;
 import io.bootify.taesmet_mtto.util.TipoMaquinaLabel;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,28 +35,26 @@ public class LiderController {
     }
 
     /* ================= Dashboard ================= */
-@GetMapping({"", "/"})
-public String dashboard(Model m) {
-    long pendientes = mantRepo.countByEstado(EstadoMantenimiento.PENDIENTE);
-    long enProceso  = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
-    long realizados = mantRepo.countByEstado(EstadoMantenimiento.REALIZADO);
-    long esperaRep  = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
+    @GetMapping({"", "/"})
+    public String dashboard(Model m) {
+        long pendientes = mantRepo.countByEstado(EstadoMantenimiento.PENDIENTE);
+        long enProceso  = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
+        long realizados = mantRepo.countByEstado(EstadoMantenimiento.REALIZADO);
+        long esperaRep  = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
 
-    List<Mantenimiento> proximos = mantRepo
-            .findByProgramadoParaGreaterThanEqualOrderByProgramadoParaAsc(
-                    LocalDate.now(), PageRequest.of(0, 5)
-            )
-            .getContent();
+        Page<Mantenimiento> pageProx = mantRepo
+                .findByProgramadoParaGreaterThanEqualOrderByProgramadoParaAsc(
+                        LocalDate.now(), PageRequest.of(0, 5)
+                );
 
-    m.addAttribute("pendientes", pendientes);
-    m.addAttribute("enProceso", enProceso);
-    m.addAttribute("realizados", realizados);
-    m.addAttribute("esperaRepuestos", esperaRep);
-    m.addAttribute("proximos", proximos);
+        m.addAttribute("pendientes", pendientes);
+        m.addAttribute("enProceso", enProceso);
+        m.addAttribute("realizados", realizados);
+        m.addAttribute("esperaRepuestos", esperaRep);
+        m.addAttribute("proximos", pageProx.getContent());
 
-    return "rol/lider";
-}
-
+        return "rol/lider"; // templates/rol/lider.html
+    }
 
     /* ============ Máquinas (ver/crear) ============ */
     @GetMapping("/maquinas")
@@ -86,8 +84,7 @@ public String dashboard(Model m) {
         m.addAttribute("condiciones", CondicionMaquina.values());
         m.addAttribute("filtroTipo", tipo);
         m.addAttribute("filtroCond", condicion);
-        // Vista: templates/lider/maquinas.html
-        return "lider/maquinas";
+        return "lider/maquinas"; // templates/lider/maquinas.html
     }
 
     @PostMapping("/maquinas")
@@ -102,7 +99,6 @@ public String dashboard(Model m) {
         String sufijo = String.format("%03d", correl);
         String flag = (condicion == CondicionMaquina.NUEVA) ? "N" : "U";
         String codigo = tipo.name() + "-" + flag + "-" + sufijo;
-
         String nombre = TipoMaquinaLabel.descripcion(tipo) + " " + sufijo;
 
         int tries = 0;
@@ -147,9 +143,7 @@ public String dashboard(Model m) {
         m.addAttribute("maquinas", maquinaRepo.findAll());
         m.addAttribute("tecnicos", usuarioRepo.findTecnicosActivos());
         m.addAttribute("selMaquinaId", maquinaId);
-
-        // Vista: templates/lider/mantenimientos.html
-        return "lider/mantenimientos";
+        return "lider/mantenimientos"; // templates/lider/mantenimientos.html
     }
 
     @PostMapping("/mantenimientos/asignar")
@@ -163,7 +157,6 @@ public String dashboard(Model m) {
         Maquina maquina = maquinaRepo.findById(maquinaId).orElseThrow();
         Usuario tecnico = usuarioRepo.findById(tecnicoId).orElseThrow();
 
-        // Anti-duplicado: misma máquina+tipo con estado pendiente/proceso no puede existir
         boolean exists = mantRepo.existsByMaquinaAndTipoAndEstadoIn(
                 maquina, tipo, of(EstadoMantenimiento.PENDIENTE, EstadoMantenimiento.EN_PROCESO)
         );
@@ -180,8 +173,7 @@ public String dashboard(Model m) {
             m.setProgramadoPara(LocalDate.parse(programadoPara));
         }
         m.setDescripcion(descripcion);
-        // Si tu entidad tiene un NOT NULL en "descripcion_ejecucion", inicialízala:
-        // m.setDescripcionEjecucion("");  // <-- descomenta si aplica
+        // m.setDescripcionEjecucion(""); // Descomenta si tu columna es NOT NULL
         mantRepo.save(m);
 
         return "redirect:/lider/mantenimientos?ok";
@@ -190,8 +182,9 @@ public String dashboard(Model m) {
     /* ====== Repuestos solicitados ====== */
     @GetMapping("/repuestos")
     public String repuestos(Model m) {
-        m.addAttribute("solicitudes", repRepo.findAll());
-        // Vista: templates/lider/repuestos.html
-        return "lider/repuestos";
+        // mejor ordenados por fecha de creación (agrega el método en el repo)
+        List<RepuestoSolicitud> solicitudes = repRepo.findAllByOrderByCreadaEnDesc();
+        m.addAttribute("solicitudes", solicitudes);
+        return "lider/repuestos"; // templates/lider/repuestos.html
     }
 }

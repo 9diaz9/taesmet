@@ -1,3 +1,4 @@
+// src/main/java/io/bootify/taesmet_mtto/domain/RepuestoSolicitud.java
 package io.bootify.taesmet_mtto.domain;
 
 import jakarta.persistence.*;
@@ -10,40 +11,46 @@ public class RepuestoSolicitud {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // opcionalmente ligada a un mantenimiento
-    @ManyToOne(fetch = FetchType.LAZY)
+    // relación al mantenimiento (ajusta el nombre de columna si ya existe)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "mantenimiento_id")
     private Mantenimiento mantenimiento;
 
-    // técnico que la pide
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Usuario solicitadoPor;
+    @Column(length = 150, nullable = false)
+    private String motivo;
 
-    // máquina afectada (rápido para filtrar)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Maquina maquina;
+    @Column(length = 60, nullable = false)
+    private String codigoMaquina;
 
-    private String repuesto;
-    private Integer cantidad;
+    @Column(length = 500)
+    private String descripcion;
 
-    // estados simples: PENDIENTE, APROBADO, RECHAZADO, ENTREGADO
-    private String estado = "PENDIENTE";
+    @Column(nullable = false)
+    private Boolean aprobado = Boolean.FALSE;
 
-    private LocalDateTime creadoEn = LocalDateTime.now();
+    @Column(nullable = false)
+    private LocalDateTime creadaEn = LocalDateTime.now();
 
-    // getters/setters
+    /* ===== Getters/Setters ===== */
+
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public Mantenimiento getMantenimiento() { return mantenimiento; }
     public void setMantenimiento(Mantenimiento mantenimiento) { this.mantenimiento = mantenimiento; }
-    public Usuario getSolicitadoPor() { return solicitadoPor; }
-    public void setSolicitadoPor(Usuario solicitadoPor) { this.solicitadoPor = solicitadoPor; }
-    public Maquina getMaquina() { return maquina; }
-    public void setMaquina(Maquina maquina) { this.maquina = maquina; }
-    public String getRepuesto() { return repuesto; }
-    public void setRepuesto(String repuesto) { this.repuesto = repuesto; }
-    public Integer getCantidad() { return cantidad; }
-    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
-    public LocalDateTime getCreadoEn() { return creadoEn; }
-    public void setCreadoEn(LocalDateTime creadoEn) { this.creadoEn = creadoEn; }
+
+    public String getMotivo() { return motivo; }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
+
+    public String getCodigoMaquina() { return codigoMaquina; }
+    public void setCodigoMaquina(String codigoMaquina) { this.codigoMaquina = codigoMaquina; }
+
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+    public Boolean getAprobado() { return aprobado; }
+    public void setAprobado(Boolean aprobado) { this.aprobado = aprobado; }
+
+    public LocalDateTime getCreadaEn() { return creadaEn; }
+    public void setCreadaEn(LocalDateTime creadaEn) { this.creadaEn = creadaEn; }
 }

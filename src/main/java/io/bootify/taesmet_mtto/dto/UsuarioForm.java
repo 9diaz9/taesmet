@@ -6,10 +6,15 @@ import jakarta.validation.constraints.*;
 public class UsuarioForm {
 
     @NotBlank(message = "no debe estar vacío")
-    @Size(min = 2, max = 60)
+
+    @Size(min = 3, max = 60)
+    @Pattern(regexp = "^(?!.*\\d)[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$",
+             message = "Solo letras y espacios")
+
     private String nombre;
 
     @NotBlank(message = "no debe estar vacío")
+    @Size(min = 5, max = 64, message = "5–64 caracteres")
     @Pattern(regexp = "(?=.{5,64}$)[A-Za-z]{2,}(?:[._-][A-Za-z]+)*@taesmet\\.com",
              message = "debe ser del dominio taesmet.com")
     private String email;
