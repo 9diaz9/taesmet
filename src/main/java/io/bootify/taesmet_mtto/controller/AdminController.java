@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -34,15 +38,39 @@ public class AdminController {
     private final PasswordEncoder encoder;
 
     public AdminController(UsuarioRepository usuarioRepo,
-                           MaquinaRepository maquinaRepo,
-                           PasswordEncoder encoder) {
+            MaquinaRepository maquinaRepo,
+            PasswordEncoder encoder) {
         this.usuarioRepo = usuarioRepo;
         this.maquinaRepo = maquinaRepo;
         this.encoder = encoder;
     }
 
+    @GetMapping("/maquinas/{id}/detalles")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDetallesMaquina(@PathVariable Long id) {
+        try {
+            Optional<Maquina> maquinaOpt = maquinaRepo.findById(id);
+            if (maquinaOpt.isPresent()) {
+                Maquina maquina = maquinaOpt.get();
+
+                Map<String, Object> detalles = new HashMap<>();
+                detalles.put("id", maquina.getId());
+                detalles.put("codigo", maquina.getCodigo());
+                detalles.put("nombre", maquina.getNombre());
+                detalles.put("tipo", maquina.getTipo().name());
+                detalles.put("condicion", maquina.getCondicion().name());
+
+                return ResponseEntity.ok(detalles);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     /* ======================= DASHBOARD ======================= */
-    @GetMapping({"", "/"})
+    @GetMapping({ "", "/" })
     public String adminHome() {
         return "admin/dashboard";
     }
@@ -51,15 +79,15 @@ public class AdminController {
     @GetMapping("/usuarios")
     public String usuarios(Model m) {
         m.addAttribute("usuarios", usuarioRepo.findAll());
-        m.addAttribute("usuarioForm", new UsuarioForm());   // <-- usa DTO
+        m.addAttribute("usuarioForm", new UsuarioForm()); // <-- usa DTO
         m.addAttribute("roles", Rol.values());
         return "admin/usuarios";
     }
 
     @PostMapping("/usuarios")
     public String crearUsuario(@Valid @ModelAttribute("usuarioForm") UsuarioForm form,
-                               BindingResult br,
-                               Model m) {
+            BindingResult br,
+            Model m) {
 
         // email único
         if (!br.hasErrors() && usuarioRepo.findByEmailIgnoreCase(form.getEmail()).isPresent()) {
@@ -124,11 +152,11 @@ public class AdminController {
     /* ===== CREAR (solo selects, genera código/nombre automático) ===== */
     @PostMapping("/maquinas")
     public String crearMaquina(@RequestParam("tipo") TipoMaquina tipo,
-                                @RequestParam("condicion") CondicionMaquina condicion,
-                                @RequestParam(value = "page", defaultValue = "0") int page,
-                                @RequestParam(value = "size", defaultValue = "10") int size,
-                                @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
-                                @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
+            @RequestParam("condicion") CondicionMaquina condicion,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
+            @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
 
         long correl = maquinaRepo.countByTipoAndCondicion(tipo, condicion) + 1L;
         String sufijo = String.format("%03d", correl);
@@ -162,10 +190,10 @@ public class AdminController {
     /* ===== DUPLICAR ===== */
     @PostMapping("/maquinas/{id}/duplicar")
     public String duplicar(@PathVariable Long id,
-                            @RequestParam(value = "page", defaultValue = "0") int page,
-                            @RequestParam(value = "size", defaultValue = "10") int size,
-                            @RequestParam(value = "tipo", required = false) TipoMaquina currentTipo,
-                            @RequestParam(value = "cond", required = false) CondicionMaquina currentCond) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "tipo", required = false) TipoMaquina currentTipo,
+            @RequestParam(value = "cond", required = false) CondicionMaquina currentCond) {
         Maquina found = maquinaRepo.findById(id).orElseThrow();
         return "redirect:/admin/maquinas?page=" + page + "&size=" + size +
                 "&prefTipo=" + found.getTipo() + "&prefCond=" + found.getCondicion() +
@@ -176,10 +204,10 @@ public class AdminController {
     /* ===== ELIMINAR ===== */
     @PostMapping("/maquinas/{id}/eliminar")
     public String eliminarMaquina(@PathVariable("id") Long id,
-                                  @RequestParam(value = "page", defaultValue = "0") int page,
-                                  @RequestParam(value = "size", defaultValue = "10") int size,
-                                  @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
-                                  @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
+            @RequestParam(value = "cond", required = false) CondicionMaquina cond) {
         maquinaRepo.deleteById(id);
         return "redirect:/admin/maquinas?page=" + page + "&size=" + size +
                 (tipo != null ? "&tipo=" + tipo : "") +
@@ -189,36 +217,37 @@ public class AdminController {
     /* ===== EXPORT CSV ===== */
     @GetMapping(value = "/maquinas/export.csv", produces = "text/csv")
     @ResponseBody
-    public org.springframework.http.ResponseEntity<byte[]> exportCsv(
+    public ResponseEntity<byte[]> exportCsv(
             @RequestParam(value = "tipo", required = false) TipoMaquina tipo,
             @RequestParam(value = "cond", required = false) CondicionMaquina condicion) {
 
-        List<Maquina> list =
-                (tipo != null && condicion != null)
-                        ? maquinaRepo.findByTipoAndCondicion(tipo, condicion, Pageable.unpaged()).getContent()
-                        : (tipo != null)
-                            ? maquinaRepo.findByTipo(tipo, Pageable.unpaged()).getContent()
-                            : (condicion != null)
+        List<Maquina> list = (tipo != null && condicion != null)
+                ? maquinaRepo.findByTipoAndCondicion(tipo, condicion, Pageable.unpaged()).getContent()
+                : (tipo != null)
+                        ? maquinaRepo.findByTipo(tipo, Pageable.unpaged()).getContent()
+                        : (condicion != null)
                                 ? maquinaRepo.findByCondicion(condicion, Pageable.unpaged()).getContent()
                                 : maquinaRepo.findAll();
 
         String header = "id,codigo,nombre,tipo,condicion\n";
         String body = list.stream()
-                .map(x -> x.getId() + "," + x.getCodigo() + "," + escape(x.getNombre()) + "," + x.getTipo() + "," + x.getCondicion())
+                .map(x -> x.getId() + "," + x.getCodigo() + "," + escape(x.getNombre()) + "," + x.getTipo() + ","
+                        + x.getCondicion())
                 .collect(Collectors.joining("\n"));
 
         String csv = header + body;
         byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
         String filename = "maquinas_" + LocalDateTime.now() + ".csv";
 
-        return org.springframework.http.ResponseEntity.ok()
+        return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(bytes);
     }
 
     private static String escape(String v) {
-        if (v == null) return "";
+        if (v == null)
+            return "";
         if (v.contains(",") || v.contains("\"")) {
             String safe = v.replace("\"", "\"\"");
             return "\"" + safe + "\"";

@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 
-
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    
+
     Optional<Usuario> findByEmailIgnoreCase(String email);
-@Query("select u from Usuario u where u.rol = io.bootify.taesmet_mtto.domain.Rol.TECNICO and u.activo = true")
-List<Usuario> findTecnicosActivos();
+
+    @Query("select u from Usuario u where u.rol = io.bootify.taesmet_mtto.domain.Rol.TECNICO and u.activo = true")
+    List<Usuario> findTecnicosActivos();
 }

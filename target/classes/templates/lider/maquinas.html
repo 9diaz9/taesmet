@@ -1,150 +1,193 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Máquinas | Panel Líder</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/lider.css">
+  <link rel="stylesheet" href="/css/general.css">
+  <link rel="stylesheet" href="/css/maquinas.css">
 </head>
-<body class="bg-dark text-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="/lider"><i class="bi bi-speedometer2 me-2"></i>Panel de Líder</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div id="nav" class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-       <li class="nav-item">
-  <form th:action="@{/logout}" method="post" class="d-inline">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <button type="submit"
-            class="btn btn-outline-light ms-lg-3 d-lg-inline w-100 w-lg-auto">
-      <i class="bi bi-box-arrow-right me-1"></i> Salir
-    </button>
-  </form>
-</li>
 
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<main class="container my-5">
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <h3 class="fw-bold text-warning m-0">Máquinas</h3>
-    <a href="/lider" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Panel</a>
-  </div>
-
-  <!-- Filtros -->
-  <div class="card bg-secondary-subtle text-dark p-3 mb-4">
-    <form class="row g-3" method="get" action="/lider/maquinas">
-      <div class="col-md-4">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" name="tipo">
-          <option th:selected="${filtroTipo == null}" value="">Todos</option>
-          <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}" th:selected="${filtroTipo == t}"></option>
-        </select>
+<body>
+  <!-- Navbar -->
+  <nav class="admin-navbar">
+    <div class="nav-container">
+      <a class="nav-brand" href="/lider">
+        <i class="bi bi-speedometer2"></i>Panel de Líder
+      </a>
+      <div class="nav-menu">
+        <a class="nav-link active" href="/lider/maquinas">Máquinas</a>
+        <form th:action="@{/logout}" method="post" class="nav-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="btn-logout">
+            <i class="bi bi-box-arrow-right"></i> Salir
+          </button>
+        </form>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Condición</label>
-        <select class="form-select" name="cond">
-          <option th:selected="${filtroCond == null}" value="">Todas</option>
-          <option th:each="c : ${condiciones}" th:value="${c}" th:text="${c}" th:selected="${filtroCond == c}"></option>
-        </select>
+    </div>
+  </nav>
+
+  <main class="admin-container">
+    <div class="page-header">
+      <h1 class="page-title">Gestión de Máquinas</h1>
+    </div>
+
+    <!-- Alertas -->
+    <div th:if="${param.error}" class="alert alert-error">
+      <i class="bi bi-exclamation-triangle"></i>
+      <span th:text="${param.error}">Error al procesar la solicitud</span>
+      <button class="alert-close">&times;</button>
+    </div>
+
+    <div th:if="${param.ok}" class="alert alert-success">
+      <i class="bi bi-check-circle"></i> Operación realizada correctamente
+      <button class="alert-close">&times;</button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+      <h3 class="filters-title">
+        <i class="bi bi-funnel"></i> Filtros
+      </h3>
+      <form class="filters-form" method="get" action="/lider/maquinas">
+        <div class="filter-group">
+          <label class="filter-label">Tipo</label>
+          <select class="filter-select" name="tipo">
+            <option th:selected="${filtroTipo == null}" value="">Todos los tipos</option>
+            <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}" th:selected="${filtroTipo == t}"></option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Condición</label>
+          <select class="filter-select" name="cond">
+            <option th:selected="${filtroCond == null}" value="">Todas las condiciones</option>
+            <option th:each="c : ${condiciones}" th:value="${c}" th:text="${c}" th:selected="${filtroCond == c}">
+            </option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn-filter">
+            <i class="bi bi-search"></i> Aplicar Filtros
+          </button>
+          <a class="btn-clear" href="/lider/maquinas">
+            <i class="bi bi-x-circle"></i> Limpiar
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Crear máquina -->
+    <div class="create-card">
+      <h3 class="create-title">
+        <i class="bi bi-plus-circle"></i> Crear Nueva Máquina
+      </h3>
+      <form class="create-form" method="post" action="/lider/maquinas">
+        <input type="hidden" name="page" th:value="${page != null ? page.number : 0}">
+        <input type="hidden" name="size" th:value="${page != null ? page.size : 10}">
+        <input type="hidden" name="tipoFilter" th:value="${filtroTipo}">
+        <input type="hidden" name="condFilter" th:value="${filtroCond}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo de Máquina</label>
+            <select class="form-select" name="tipo" required>
+              <option value="" selected disabled>Seleccione el tipo...</option>
+              <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Condición</label>
+            <select class="form-select" name="condicion" required>
+              <option value="" selected disabled>Seleccione la condición...</option>
+              <option th:each="c : ${condiciones}" th:value="${c}" th:text="${c}"></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-create">
+              <i class="bi bi-cpu"></i> Crear Máquina
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tarjetas de máquinas -->
+    <div class="machines-grid" id="machinesGrid">
+      <div th:each="m : ${maquinas}" class="machine-card" th:data-machine="${m.id}">
+        <div class="machine-header">
+          <div class="machine-icon">
+            <i class="bi bi-cpu"></i>
+          </div>
+          <div class="machine-status" th:classappend="${m.condicion?.name() == 'NUEVA'} ? 'status-new' : 'status-used'">
+            <span th:text="${m.condicion}">NUEVA</span>
+          </div>
+        </div>
+
+        <div class="machine-content">
+          <h4 class="machine-name" th:text="${m.nombre}">Torno 001</h4>
+          <p class="machine-code" th:text="${m.codigo}">MQ-001</p>
+          <div class="machine-type">
+            <i class="bi bi-tag"></i>
+            <span th:text="${m.tipo}">TORNO</span>
+          </div>
+        </div>
+
+        <div class="machine-actions">
+          <button class="btn-view" th:onclick="|openMachineModal(${m.id})|">
+            <i class="bi bi-eye"></i> Ver Detalles
+          </button>
+        </div>
       </div>
-      <div class="col-md-4 d-flex align-items-end gap-2">
-        <button class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Filtrar</button>
-        <a class="btn btn-outline-secondary w-100" href="/lider/maquinas"><i class="bi bi-x-circle"></i> Limpiar</a>
+
+      <!-- Estado vacío -->
+      <div th:if="${maquinas == null or #lists.isEmpty(maquinas)}" class="empty-state">
+        <div class="empty-icon">
+          <i class="bi bi-cpu"></i>
+        </div>
+        <h3>No hay máquinas registradas</h3>
+        <p>Comienza creando tu primera máquina usando el formulario superior.</p>
       </div>
-    </form>
-  </div>
-
-  <!-- Crear máquina -->
-  <!-- Crear máquina -->
-<div class="card bg-secondary-subtle text-dark p-3 mb-4">
-  <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle"></i> Crear nueva máquina</h5>
-
-  <form class="row g-3" method="post" action="/lider/maquinas">
-    <!-- 🔒 Token CSRF obligatorio -->
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-    <input type="hidden" name="page" th:value="${page.number}">
-    <input type="hidden" name="size" th:value="${page.size}">
-    <input type="hidden" name="tipoFilter" th:value="${filtroTipo}">
-    <input type="hidden" name="condFilter" th:value="${filtroCond}">
-
-    <div class="col-md-4">
-      <label class="form-label">Tipo</label>
-      <select class="form-select" name="tipo" required>
-        <option value="" selected disabled>Seleccione…</option>
-        <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
-      </select>
-    </div>
-
-    <div class="col-md-4">
-      <label class="form-label">Condición</label>
-      <select class="form-select" name="condicion" required>
-        <option value="" selected disabled>Seleccione…</option>
-        <option th:each="c : ${condiciones}" th:value="${c}" th:text="${c}"></option>
-      </select>
-    </div>
-
-    <div class="col-md-4 d-flex align-items-end">
-      <button class="btn btn-success w-100"><i class="bi bi-save"></i> Crear</button>
-    </div>
-  </form>
-</div>
-
-  <!-- Tabla -->
-  <div class="card bg-secondary-subtle text-dark p-0 shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-dark table-hover align-middle m-0">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Condición</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="m : ${maquinas}">
-            <td th:text="${m.id}">1</td>
-            <td th:text="${m.codigo}">MQ-001</td>
-            <td th:text="${m.nombre}">Torno 001</td>
-            <td th:text="${m.tipo}">TORNO</td>
-            <td th:text="${m.condicion}">NUEVA</td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(maquinas)}">
-            <td colspan="5" class="text-center text-secondary py-4">Sin resultados</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <!-- Paginación -->
-    <div class="p-3 d-flex justify-content-between align-items-center">
-      <span class="small text-secondary">Página <b th:text="${page.number + 1}">1</b> de <b th:text="${page.totalPages}">1</b></span>
-      <div class="btn-group">
-        <a class="btn btn-outline-secondary btn-sm"
-           th:classappend="${page.first} ? ' disabled'"
-           th:href="@{/lider/maquinas(page=${page.number-1}, size=${page.size}, tipo=${filtroTipo}, cond=${filtroCond})}">
-          <i class="bi bi-chevron-left"></i>
+    <div class="pagination" th:if="${page != null and page.totalPages > 1}">
+      <div class="pagination-info">
+        Mostrando <span th:text="${page.number + 1}">1</span> de <span th:text="${page.totalPages}">1</span> páginas
+        • <span th:text="${page.totalElements}">0</span> máquinas en total
+      </div>
+      <div class="pagination-controls">
+        <a class="pagination-btn" th:classappend="${page.first} ? 'disabled' : ''"
+          th:href="@{/lider/maquinas(page=${page.number-1}, size=${page.size}, tipo=${filtroTipo}, cond=${filtroCond})}">
+          <i class="bi bi-chevron-left"></i> Anterior
         </a>
-        <a class="btn btn-outline-secondary btn-sm"
-           th:classappend="${page.last} ? ' disabled'"
-           th:href="@{/lider/maquinas(page=${page.number+1}, size=${page.size}, tipo=${filtroTipo}, cond=${filtroCond})}">
-          <i class="bi bi-chevron-right"></i>
+        <a class="pagination-btn" th:classappend="${page.last} ? 'disabled' : ''"
+          th:href="@{/lider/maquinas(page=${page.number+1}, size=${page.size}, tipo=${filtroTipo}, cond=${filtroCond})}">
+          Siguiente <i class="bi bi-chevron-right"></i>
         </a>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Modal de detalles de máquina -->
+  <div id="machineModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Detalles de la Máquina</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Cargando información de la máquina...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/maquinas-lider.js"></script>
 </body>
+
 </html>

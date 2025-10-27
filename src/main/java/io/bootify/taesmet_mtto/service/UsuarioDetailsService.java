@@ -17,7 +17,7 @@ public class UsuarioDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario u = repo.findByEmailIgnoreCase(email)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         if (!u.isActivo()) {
             throw new UsernameNotFoundException("Usuario inactivo");
         }

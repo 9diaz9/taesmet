@@ -5,13 +5,16 @@ import io.bootify.taesmet_mtto.repos.*;
 import io.bootify.taesmet_mtto.util.TipoMaquinaLabel;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.util.List.of;
 
@@ -25,9 +28,9 @@ public class LiderController {
     private final RepuestoSolicitudRepository repRepo;
 
     public LiderController(MaquinaRepository maquinaRepo,
-                           UsuarioRepository usuarioRepo,
-                           MantenimientoRepository mantRepo,
-                           RepuestoSolicitudRepository repRepo) {
+            UsuarioRepository usuarioRepo,
+            MantenimientoRepository mantRepo,
+            RepuestoSolicitudRepository repRepo) {
         this.maquinaRepo = maquinaRepo;
         this.usuarioRepo = usuarioRepo;
         this.mantRepo = mantRepo;
@@ -35,28 +38,50 @@ public class LiderController {
     }
 
     /* ================= Dashboard ================= */
-@GetMapping({"", "/"})
-public String dashboard(Model m) {
-    long pendientes = mantRepo.countByEstado(EstadoMantenimiento.PENDIENTE);
-    long enProceso  = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
-    long realizados = mantRepo.countByEstado(EstadoMantenimiento.REALIZADO);
-    long esperaRep  = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
+    @GetMapping({ "", "/" })
+    public String dashboard(Model m) {
+        long pendientes = mantRepo.countByEstado(EstadoMantenimiento.PENDIENTE);
+        long enProceso = mantRepo.countByEstado(EstadoMantenimiento.EN_PROCESO);
+        long realizados = mantRepo.countByEstado(EstadoMantenimiento.REALIZADO);
+        long esperaRep = mantRepo.countByEstado(EstadoMantenimiento.EN_ESPERA_REPUESTOS);
 
-    List<Mantenimiento> proximos = mantRepo
-            .findByProgramadoParaGreaterThanEqualOrderByProgramadoParaAsc(
-                    LocalDate.now(), PageRequest.of(0, 5)
-            )
-            .getContent();
+        List<Mantenimiento> proximos = mantRepo
+                .findByProgramadoParaGreaterThanEqualOrderByProgramadoParaAsc(
+                        LocalDate.now(), PageRequest.of(0, 5))
+                .getContent();
 
-    m.addAttribute("pendientes", pendientes);
-    m.addAttribute("enProceso", enProceso);
-    m.addAttribute("realizados", realizados);
-    m.addAttribute("esperaRepuestos", esperaRep);
-    m.addAttribute("proximos", proximos);
+        m.addAttribute("pendientes", pendientes);
+        m.addAttribute("enProceso", enProceso);
+        m.addAttribute("realizados", realizados);
+        m.addAttribute("esperaRepuestos", esperaRep);
+        m.addAttribute("proximos", proximos);
 
-    return "rol/lider";
-}
+        return "rol/lider";
+    }
 
+    @GetMapping("/maquinas/{id}/detalles")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDetallesMaquina(@PathVariable Long id) {
+        try {
+            return maquinaRepo.findById(id)
+                    .map(this::maquinaToDetallesMap)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private Map<String, Object> maquinaToDetallesMap(Maquina maquina) {
+        Map<String, Object> detalles = new HashMap<>();
+        detalles.put("id", maquina.getId());
+        detalles.put("codigo", maquina.getCodigo());
+        detalles.put("nombre", maquina.getNombre());
+        detalles.put("tipo", maquina.getTipo().name());
+        detalles.put("condicion", maquina.getCondicion().name());
+        return detalles;
+    }
 
     /* ============ Máquinas (ver/crear) ============ */
     @GetMapping("/maquinas")
@@ -86,17 +111,16 @@ public String dashboard(Model m) {
         m.addAttribute("condiciones", CondicionMaquina.values());
         m.addAttribute("filtroTipo", tipo);
         m.addAttribute("filtroCond", condicion);
-        // Vista: templates/lider/maquinas.html
         return "lider/maquinas";
     }
 
     @PostMapping("/maquinas")
     public String crearMaquina(@RequestParam("tipo") TipoMaquina tipo,
-                               @RequestParam("condicion") CondicionMaquina condicion,
-                               @RequestParam(value = "page", defaultValue = "0") int page,
-                               @RequestParam(value = "size", defaultValue = "10") int size,
-                               @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
-                               @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
+            @RequestParam("condicion") CondicionMaquina condicion,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "tipoFilter", required = false) TipoMaquina tipoFilter,
+            @RequestParam(value = "condFilter", required = false) CondicionMaquina condFilter) {
 
         long correl = maquinaRepo.countByTipoAndCondicion(tipo, condicion) + 1L;
         String sufijo = String.format("%03d", correl);
@@ -130,9 +154,9 @@ public String dashboard(Model m) {
     /* ====== Asignar / Listar Mantenimiento ====== */
     @GetMapping("/mantenimientos")
     public String mantenimientos(
-            @RequestParam(value="maquinaId", required = false) Long maquinaId,
-            @RequestParam(value="page", defaultValue = "0") int page,
-            @RequestParam(value="size", defaultValue = "10") int size,
+            @RequestParam(value = "maquinaId", required = false) Long maquinaId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model m) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -157,16 +181,15 @@ public String dashboard(Model m) {
             @RequestParam("maquinaId") @NotNull Long maquinaId,
             @RequestParam("tecnicoId") @NotNull Long tecnicoId,
             @RequestParam("tipo") TipoMantenimiento tipo,
-            @RequestParam(value="programadoPara", required = false) String programadoPara,
-            @RequestParam(value="descripcion", required = false) String descripcion
-    ) {
+            @RequestParam(value = "programadoPara", required = false) String programadoPara,
+            @RequestParam(value = "descripcion", required = false) String descripcion) {
         Maquina maquina = maquinaRepo.findById(maquinaId).orElseThrow();
         Usuario tecnico = usuarioRepo.findById(tecnicoId).orElseThrow();
 
-        // Anti-duplicado: misma máquina+tipo con estado pendiente/proceso no puede existir
+        // Anti-duplicado: misma máquina+tipo con estado pendiente/proceso no puede
+        // existir
         boolean exists = mantRepo.existsByMaquinaAndTipoAndEstadoIn(
-                maquina, tipo, of(EstadoMantenimiento.PENDIENTE, EstadoMantenimiento.EN_PROCESO)
-        );
+                maquina, tipo, of(EstadoMantenimiento.PENDIENTE, EstadoMantenimiento.EN_PROCESO));
         if (exists) {
             return "redirect:/lider/mantenimientos?error=duplicado";
         }
