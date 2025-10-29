@@ -12,7 +12,7 @@
 
   <properties>
     <!-- Actualizado a Java 24 LTS -->
-    <java.version>24</java.version>
+    <java.version>21</java.version>
     <spring-boot.version>3.3.4</spring-boot.version>
     <!-- Versión reciente de Flyway compatible con PG 17 -->
     <flyway.version>10.20.1</flyway.version>

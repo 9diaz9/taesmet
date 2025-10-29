@@ -6,6 +6,7 @@ io\bootify\taesmet_mtto\config\DataLoader.class
 io\bootify\taesmet_mtto\domain\RepuestoSolicitud.class
 io\bootify\taesmet_mtto\domain\CondicionMaquina.class
 io\bootify\taesmet_mtto\domain\Periodicidad.class
+io\bootify\taesmet_mtto\dto\RepuestoSolicitudForm.class
 io\bootify\taesmet_mtto\domain\Auditoria$AuditoriaBuilder.class
 io\bootify\taesmet_mtto\controller\AdminController.class
 io\bootify\taesmet_mtto\domain\EjecucionTag.class

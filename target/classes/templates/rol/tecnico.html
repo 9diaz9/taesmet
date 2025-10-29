@@ -7,119 +7,227 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#0b1220; --card:#0f172a; --muted:#94a3b8; --accent:#0ea5e9; --ok:#22c55e; --warn:#f59e0b;
-    }
-    body{background:radial-gradient(1200px 600px at 80% -100px, #12213f 0%, transparent 60%) no-repeat,
-                     radial-gradient(900px 500px at -10% 120%, #13233f 0%, transparent 55%) no-repeat,
-                     var(--bg); color:#e5e7eb;}
-    .navbar{backdrop-filter:blur(6px)}
-    .cardx{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)), var(--card);
-           border:1px solid rgba(255,255,255,.06); border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.35);}
-    .metric{padding:18px; border-radius:14px; background:#0b1324; border:1px solid rgba(255,255,255,.05)}
-    .metric .lbl{color:var(--muted); font-size:.9rem}
-    .metric .val{font-weight:800; font-size:1.6rem}
-    .table-dark{--bs-table-bg:#0b1324; --bs-table-striped-bg:#0f1625}
-    a.btn-outline-light{--bs-btn-color:#e5e7eb; --bs-btn-border-color:#475569}
-  </style>
+  
+  <link rel="stylesheet" href="/css/dashboard_lider.css">
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark admin-navbar sticky-top">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="#"><i class="bi bi-wrench-adjustable-circle me-2"></i>Panel Técnico</a>
-    <div class="d-flex gap-2">
-      <a class="btn btn-outline-light btn-sm" th:href="@{/tecnico/mios}"><i class="bi bi-list-ul me-1"></i>Mis mantenimientos</a>
-      <form th:action="@{/logout}" method="post" class="d-inline">
-        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
-        <button class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
-      </form>
+    <a class="navbar-brand fw-bold" href="#" th:href="@{/tecnico}">
+      <i class="bi bi-wrench-adjustable-circle me-2"></i>Panel Técnico
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="navbar-nav ms-auto d-flex gap-2 align-items-center">
+        <a class="nav-link btn-nav" th:href="@{/tecnico/mios}">
+          <i class="bi bi-list-ul me-1"></i>Mis mantenimientos
+        </a>
+        <a class="nav-link btn-nav" th:href="@{/tecnico/mis-solicitudes}">
+          <i class="bi bi-clipboard-check me-1"></i>Mis solicitudes
+        </a>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+          <button class="btn btn-logout-nav">
+            <i class="bi bi-box-arrow-right me-1"></i>Salir
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </nav>
 
 <main class="container py-4">
-  <div class="mb-4">
-    <h2 class="fw-bold">
-      Hola,
-      <span th:text="${yo != null} ? ${yo.nombre} : 'Técnico'">Técnico</span>
-      <span>👋</span>
-    </h2>
-    <div class="text-secondary">Resumen de tus tareas y accesos rápidos</div>
+  <!-- Header con bienvenida -->
+  <div class="page-header mb-4">
+    <div class="header-content">
+      <h1 class="page-title">
+        Hola, <span th:text="${yo != null} ? ${yo.nombre} : 'Técnico'" class="text-accent">Técnico</span> 👋
+      </h1>
+      <p class="page-subtitle">Resumen de tus tareas y accesos rápidos</p>
+    </div>
+    <div class="header-actions">
+      <a th:href="@{/tecnico/mios}" class="btn btn-primary">
+        <i class="bi bi-list-check me-1"></i>Ver Todos los Mantenimientos
+      </a>
+      <a th:href="@{/tecnico/crear-solicitud}" class="btn btn-secondary">
+        <i class="bi bi-plus-circle me-1"></i>Nueva Solicitud
+      </a>
+    </div>
   </div>
 
   <!-- Métricas -->
   <div class="row g-3 mb-4">
     <div class="col-md-3">
-      <div class="metric">
-        <div class="lbl"><i class="bi bi-grid-3x3-gap me-1"></i> Total asignados</div>
-        <div class="val" th:text="${total} != null ? ${total} : 0">0</div>
+      <div class="metric-card">
+        <div class="metric-icon total">
+          <i class="bi bi-grid-3x3-gap"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value" th:text="${total} != null ? ${total} : 0">0</div>
+          <div class="metric-label">Total Asignados</div>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="metric">
-        <div class="lbl"><i class="bi bi-hourglass-split me-1"></i> Pendientes</div>
-        <div class="val" th:text="${pendientes} != null ? ${pendientes} : 0">0</div>
+      <div class="metric-card">
+        <div class="metric-icon pending">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value" th:text="${pendientes} != null ? ${pendientes} : 0">0</div>
+          <div class="metric-label">Pendientes</div>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="metric">
-        <div class="lbl"><i class="bi bi-lightning-charge me-1"></i> En curso</div>
-        <div class="val" th:text="${enCurso} != null ? ${enCurso} : 0">0</div>
+      <div class="metric-card">
+        <div class="metric-icon progress">
+          <i class="bi bi-lightning-charge"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value" th:text="${enCurso} != null ? ${enCurso} : 0">0</div>
+          <div class="metric-label">En Curso</div>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="metric">
-        <div class="lbl"><i class="bi bi-check2-circle me-1"></i> Completados</div>
-        <div class="val" th:text="${completados} != null ? ${completados} : 0">0</div>
+      <div class="metric-card">
+        <div class="metric-icon completed">
+          <i class="bi bi-check2-circle"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value" th:text="${completados} != null ? ${completados} : 0">0</div>
+          <div class="metric-label">Completados</div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Últimos asignados -->
-  <div class="cardx p-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5 class="m-0 text-warning"><i class="bi bi-clock-history me-1"></i> Últimos asignados</h5>
-      <a class="btn btn-outline-light btn-sm" th:href="@{/tecnico/mios}">Ver todos</a>
+  <div class="card-main">
+    <div class="card-header-main">
+      <div class="card-title-section">
+        <i class="bi bi-clock-history me-2"></i>
+        <h5 class="card-title-main">Últimos Mantenimientos Asignados</h5>
+      </div>
+      <a class="btn btn-secondary" th:href="@{/tecnico/mios}">
+        <i class="bi bi-arrow-right me-1"></i>Ver Todos
+      </a>
     </div>
+    
+    <div class="card-body-main">
+      <div class="table-responsive">
+        <table class="table table-custom">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Código Máquina</th>
+              <th>Máquina</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="mt : ${recientes}" class="table-row">
+              <td class="fw-bold" th:text="'MT-' + ${mt.id}">MT-1</td>
+              <td th:text="${mt.maquina != null} ? ${mt.maquina.codigo} : '-'">MAQ-001</td>
+              <td th:text="${mt.maquina != null} ? ${mt.maquina.nombre} : '-'">Nombre máquina</td>
+              <td>
+                <span class="priority-badge" 
+                      th:classappend="
+                        ${mt.prioridad != null and mt.prioridad.name() == 'ALTA'} ? 'priority-high' :
+                        (${mt.prioridad != null and mt.prioridad.name() == 'MEDIA'} ? 'priority-medium' : 'priority-low')"
+                      th:text="${mt.prioridad != null} ? ${mt.prioridad} : 'NORMAL'">
+                  NORMAL
+                </span>
+              </td>
+              <td>
+                <span class="status-badge"
+                      th:text="${mt.estado != null} ? ${mt.estado} : '—'"
+                      th:classappend="
+                        ${mt.estado != null and mt.estado.name() == 'PENDIENTE'} ? 'status-pending' :
+                        (${mt.estado != null and (mt.estado.name() == 'EN_CURSO' or mt.estado.name() == 'EN_PROCESO')} ? 'status-progress' :
+                        (${mt.estado != null and (mt.estado.name() == 'COMPLETADO' or mt.estado.name() == 'FINALIZADO')} ? 'status-completed' : 'status-unknown'))">
+                  PENDIENTE
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <a th:href="@{/tecnico/mantenimiento/{id}(id=${mt.id})}" class="btn-action" title="Ver detalles">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a th:if="${mt.estado != null and mt.estado.name() == 'PENDIENTE'}" 
+                     th:href="@{/tecnico/mantenimiento/{id}/iniciar(id=${mt.id})}" 
+                     class="btn-action btn-action-primary" title="Iniciar mantenimiento">
+                    <i class="bi bi-play-circle"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${recientes == null or #lists.isEmpty(recientes)}">
+              <td colspan="6" class="text-center py-5 empty-state">
+                <div class="empty-icon">
+                  <i class="bi bi-inbox"></i>
+                </div>
+                <h5 class="mt-3">Aún no tienes asignaciones recientes</h5>
+                <p class="text-muted">Cuando te asignen mantenimientos, aparecerán aquí.</p>
+                <a th:href="@{/tecnico/mios}" class="btn btn-primary mt-2">
+                  <i class="bi bi-search me-1"></i>Explorar Mantenimientos
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-    <div class="table-responsive">
-      <table class="table table-dark table-hover align-middle mb-0">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Código</th>
-            <th>Máquina</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="mt : ${recientes}">
-            <td th:text="${mt.id}">1</td>
-            <td th:text="${mt.maquina != null} ? ${mt.maquina.codigo} : '-'">MAQ-001</td>
-            <td th:text="${mt.maquina != null} ? ${mt.maquina.nombre} : '-'">Nombre máquina</td>
-            <td>
-              <span class="badge"
-                    th:text="${mt.estado != null} ? ${mt.estado} : '—'"
-                    th:classappend="
-                      ${mt.estado != null and mt.estado.name() == 'PENDIENTE'} ? ' text-bg-warning' :
-                      (${mt.estado != null and (mt.estado.name() == 'EN_CURSO' or mt.estado.name() == 'EN_PROCESO')} ? ' text-bg-info' :
-                      (${mt.estado != null and (mt.estado.name() == 'COMPLETADO' or mt.estado.name() == 'FINALIZADO')} ? ' text-bg-success' : ' text-bg-secondary'))">
-                PENDIENTE
-              </span>
-            </td>
-          </tr>
-          <tr th:if="${recientes == null or #lists.isEmpty(recientes)}">
-            <td colspan="4" class="text-center text-secondary py-4">Aún no tienes asignaciones recientes.</td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- Accesos rápidos -->
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="quick-access-card">
+        <div class="quick-access-icon">
+          <i class="bi bi-tools"></i>
+        </div>
+        <div class="quick-access-content">
+          <h6>Gestión de Mantenimientos</h6>
+          <p>Administra tus mantenimientos asignados y realiza seguimiento</p>
+          <a th:href="@{/tecnico/mios}" class="btn btn-sm btn-primary">Acceder</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="quick-access-card">
+        <div class="quick-access-icon">
+          <i class="bi bi-clipboard-check"></i>
+        </div>
+        <div class="quick-access-content">
+          <h6>Solicitudes de Repuestos</h6>
+          <p>Gestiona tus solicitudes de repuestos y materiales</p>
+          <a th:href="@{/tecnico/mis-solicitudes}" class="btn btn-sm btn-primary">Acceder</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="quick-access-card">
+        <div class="quick-access-icon">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="quick-access-content">
+          <h6>Historial de Actividades</h6>
+          <p>Revisa tu historial de mantenimientos completados</p>
+          <a th:href="@{/tecnico/historial}" class="btn btn-sm btn-primary">Acceder</a>
+        </div>
+      </div>
     </div>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/dashboard_lider.js"></script>
 </body>
 </html>
